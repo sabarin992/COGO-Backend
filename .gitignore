@@ -1,0 +1,7 @@
+.DS_Store
+
+# ignore all compiled files
+*.pyc
+
+# secure files
+.env
