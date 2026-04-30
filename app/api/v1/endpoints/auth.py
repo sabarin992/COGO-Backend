@@ -19,7 +19,7 @@ def login(data:LoginRequest,response:Response):
 
     response.set_cookie(
         key="access_token",
-        value="token",
+        value=token,
         httponly=True,
         samesite="lax",
         secure=False,
