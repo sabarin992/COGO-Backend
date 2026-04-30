@@ -5,3 +5,6 @@
 
 # secure files
 .env
+
+# pycache
+__pycache__/
