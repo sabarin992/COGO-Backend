@@ -27,3 +27,9 @@ def login(data:LoginRequest,response:Response):
     )
    
     return {"message":"Login Successful"}
+
+@router.post("/logout")
+def logout(response:Response):
+    response.delete_cookie("access_token")
+    return {"message":"Logout Successful"}
+    
