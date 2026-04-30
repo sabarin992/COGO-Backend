@@ -7,7 +7,7 @@ from app.db.session import engine
 from app.models.user import User
 
 origins = [
-    "http://localhost:5173"# React frontend
+    "http://localhost:5173"
 ]
 
 
@@ -22,8 +22,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-app = FastAPI()
 
 Base.metadata.create_all(engine)
 
