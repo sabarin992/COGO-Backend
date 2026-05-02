@@ -25,11 +25,12 @@ def login(data:LoginRequest,response:Response,db:Session = Depends(get_db)):
 @router.post("/register")
 def register(data: RegisterRequest, db: Session = Depends(get_db)):
     user = auth_service.register_user(db, data)
-    return {
-        "message": "User created successfully",
-        "user_id": user.id,
-        "email": user.email
-    }
+    return user
+    # return {
+    #     "message": "User created successfully",
+    #     "user_id": user.id,
+    #     "email": user.email
+    # }
 
 
 @router.post("/logout")

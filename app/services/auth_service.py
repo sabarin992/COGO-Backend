@@ -4,8 +4,12 @@ from app.core.security import hash_password,verify_password,create_access_token
 from fastapi import HTTPException,Response
 from sqlalchemy.exc import IntegrityError
 from app.schemas.auth import LoginRequest
+from app.core.redis import redis_client
+from app.utils.otp import generate_otp
+import json
 
 
+OTP_EXPIRE_SECONDS = 60 # otp will expire after 1 minute
 
 def register_user(db: Session, data):
 
@@ -23,9 +27,22 @@ def register_user(db: Session, data):
     hashed = hash_password(user_data["password"])  # hash password
     user_data["password"] = hashed  # update the password to hashed password 
 
+    # generate OTP
+    otp = generate_otp()
+
+    # store user data + otp in redis
+    redis_client.setex(
+        f"otp:{data.email}",
+        OTP_EXPIRE_SECONDS,
+        json.dumps({
+            "otp": otp,
+            "user_data": user_data
+        })
+    )
+
     try:
         user = user_repo.create_user(db, user_data) # create user 
-        return user
+        
 
     except IntegrityError:
         db.rollback()
@@ -35,7 +52,10 @@ def register_user(db: Session, data):
         db.rollback()
         raise HTTPException(status_code=500, detail="Something went wrong")
 
-
+    # send OTP (replace with email service)
+    print(f"OTP for {data.email}: {otp}")
+    
+    return {"message": "OTP sent to your email"}
 
 def login_user(db, data:LoginRequest,response:Response):
 
