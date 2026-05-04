@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from app.schemas.auth import LoginRequest
 from app.core.redis import redis_client
 from app.utils.otp import generate_otp
+from app.utils.email import send_otp_email
 import json
 
 
@@ -42,8 +43,7 @@ def register_user(db: Session, data):
 
     try:
         user = user_repo.create_user(db, user_data) # create user 
-        
-
+    
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=400, detail="User already exists")
@@ -52,9 +52,9 @@ def register_user(db: Session, data):
         db.rollback()
         raise HTTPException(status_code=500, detail="Something went wrong")
 
-    # send OTP (replace with email service)
-    print(f"OTP for {data.email}: {otp}")
-    
+    # send OTP to email
+    send_otp_email(data.email, otp)
+
     return {"message": "OTP sent to your email"}
 
 def login_user(db, data:LoginRequest,response:Response):
