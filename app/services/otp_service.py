@@ -56,7 +56,9 @@ def send_otp(email: str):
         redis_client.setex(
             f"otp:{email}",
             settings.OTP_EXPIRE_SECONDS,
-            otp
+            json.dumps({
+            "otp": otp,
+        })
         )
 
         # send the otp to email
