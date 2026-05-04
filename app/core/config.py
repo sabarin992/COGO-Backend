@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
+    OTP_EXPIRE_SECONDS: int = 60
     DATABASE_URL: str
     FRONTEND_ORIGIN:str
     SECRET_KEY: str

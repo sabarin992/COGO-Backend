@@ -3,6 +3,9 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.core.redis import redis_client
 from app.repositories import user_repo
+from app.utils.email import send_otp_email
+from app.utils.otp import generate_otp
+from app.core.config import settings
 
 def verify_otp(db: Session, email: str, otp: str):
     stored_data = redis_client.get(f"otp:{email}")
@@ -26,7 +29,7 @@ def verify_otp(db: Session, email: str, otp: str):
 
         # delete OTP after success
         redis_client.delete(f"otp:{email}")
-        
+
         return {"message": "User verified successfully"}
 
     except HTTPException:
@@ -35,3 +38,36 @@ def verify_otp(db: Session, email: str, otp: str):
     except Exception:
         db.rollback()
         raise HTTPException(status_code=500, detail="Something went wrong")
+    
+
+def send_otp(email: str):
+    try:
+        # prevent spam
+        if redis_client.exists(f"otp:{email}"):
+            raise HTTPException(
+                status_code=400,
+                detail="OTP already sent. Try again later"
+            )
+
+        # generate OTP
+        otp = generate_otp()
+
+        # store in Redis
+        redis_client.setex(
+            f"otp:{email}",
+            settings.OTP_EXPIRE_SECONDS,
+            otp
+        )
+
+        # send the otp to email
+        send_otp_email(email, otp)
+
+    except HTTPException:
+        raise
+
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Something went wrong"
+        )
+    
