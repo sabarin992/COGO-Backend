@@ -21,15 +21,12 @@ def verify_otp(db: Session, email: str, otp: str):
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        # update verification status
-        user.email_verified = True
-
-        db.commit()
-        db.refresh(user)  
+        # verify user
+        user_repo.verify_user_by_email(db,user)
 
         # delete OTP after success
         redis_client.delete(f"otp:{email}")
-
+        
         return {"message": "User verified successfully"}
 
     except HTTPException:

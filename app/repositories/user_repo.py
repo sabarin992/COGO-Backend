@@ -14,3 +14,9 @@ def create_user(db: Session, user_data: dict):
     db.commit()
     db.refresh(user)
     return user
+
+
+def verify_user_by_email(db,user):
+    user.email_verified = True
+    db.commit()
+    db.refresh(user)  
