@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     APP_PASSWORD:str
+    GOOGLE_CLIENT_ID:str
 
     class Config:
         env_file = ".env"

@@ -29,3 +29,7 @@ class RegisterRequest(BaseModel):
                 "Password must contain uppercase, lowercase, number and special character"
             )
         return v
+    
+
+class GoogleToken(BaseModel):
+    token: str

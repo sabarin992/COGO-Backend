@@ -20,3 +20,22 @@ def verify_user_by_email(db,user):
     user.email_verified = True
     db.commit()
     db.refresh(user)  
+
+
+
+def get_or_create_user(db: Session, email: str, name: str):
+
+    user = db.query(User).filter(User.email == email).first()
+    if user:
+        return user
+    new_user = User(
+    email=email,
+    full_name=name,   
+    role="consumer"  
+)
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user

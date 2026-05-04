@@ -26,6 +26,11 @@ def create_access_token(data: dict):
 
 
 def verify_token(token: str):
+    payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=settings.ALGORITHM
+        )
     try:
         payload = jwt.decode(
             token,

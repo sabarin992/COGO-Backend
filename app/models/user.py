@@ -10,7 +10,8 @@ class User(Base):
 
     full_name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=True)
-    phone = Column(String, unique=True, nullable=False)
+    
+    phone = Column(String, unique=True, nullable=True)
 
     password = Column(String, nullable=True) 
 
