@@ -39,3 +39,12 @@ def get_or_create_user(db: Session, email: str, name: str):
     db.refresh(new_user)
 
     return new_user
+
+def edit_user_profile(db, user, data):
+    user.full_name = data.full_name
+    user.phone = data.phone
+
+    db.commit()
+    db.refresh(user)
+
+    return user

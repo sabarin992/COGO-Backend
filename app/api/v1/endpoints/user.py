@@ -2,7 +2,7 @@ from fastapi import APIRouter,Request,Depends
 from app.api.deps import get_current_user
 from sqlalchemy.orm import Session
 from app.db.deps import get_db
-from app.schemas.user import ResetPasswordRequest
+from app.schemas.user import ResetPasswordRequest,EditProfile
 from app.services import user_service
 from fastapi import HTTPException, status
 from app.core.exceptions import UserNotFoundError
@@ -47,3 +47,17 @@ def profile(email=Depends(get_current_user), db: Session = Depends(get_db)):
             status_code=500,
             detail="Internal server error"
         )
+    
+
+@router.put("/profile")
+def edit_profile(
+    data: EditProfile,
+    db: Session = Depends(get_db),
+    email=Depends(get_current_user)
+):
+    updated_user = user_service.edit_profile_service(db, email, data)
+
+    return {
+        "message": "Profile updated successfully",
+        "user": updated_user
+    }

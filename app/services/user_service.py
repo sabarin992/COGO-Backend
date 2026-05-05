@@ -2,6 +2,8 @@ from fastapi import HTTPException
 from app.core.security import hash_password
 from app.repositories import user_repo
 from app.core.exceptions import UserNotFoundError
+from sqlalchemy.exc import IntegrityError
+import phonenumbers
 
 
 
@@ -23,4 +25,60 @@ def profile_service(db, email):
         raise UserNotFoundError("User not found")
 
     return user
+
+
+def edit_profile_service(db,email,data):
+
+    
+    # Check user exists
+    user = user_repo.get_user_by_email(db, email)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Validate phone format
+    try:
+        parsed = phonenumbers.parse(data.phone, None)
+
+        if not phonenumbers.is_valid_number(parsed):
+            raise HTTPException(
+                status_code=400,
+                detail="Enter a valid phone number with country code."
+            )
+
+        # 🔥 Normalize phone (IMPORTANT)
+        phone = phonenumbers.format_number(
+            parsed,
+            phonenumbers.PhoneNumberFormat.E164
+        )
+
+    except phonenumbers.NumberParseException:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid phone number format. Use +<countrycode><number>."
+        )
+
+    # Optional pre-check (better UX)
+    existing_user = user_repo.get_user_by_phone(db, phone)
+
+    if existing_user and existing_user.id != user.id:
+        raise HTTPException(
+            status_code=400,
+            detail="This phone number is already in use."
+        )
+
+    # Update handle DB error
+    try:
+        return user_repo.edit_user_profile(
+            db,
+            user,
+            data
+        )
+
+    except IntegrityError:
+        db.rollback() 
+
+        raise HTTPException(
+            status_code=400,
+            detail="This phone number is already in use."
+        )
 
