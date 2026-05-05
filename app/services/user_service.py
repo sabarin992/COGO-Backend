@@ -45,7 +45,7 @@ def edit_profile_service(db,email,data):
                 detail="Enter a valid phone number with country code."
             )
 
-        # 🔥 Normalize phone (IMPORTANT)
+        # Normalize phone (IMPORTANT)
         phone = phonenumbers.format_number(
             parsed,
             phonenumbers.PhoneNumberFormat.E164
@@ -82,3 +82,24 @@ def edit_profile_service(db,email,data):
             detail="This phone number is already in use."
         )
 
+
+# get all users except admin
+def get_users_except_admin_service(db):
+    return user_repo.get_all_users_except_admin(db)
+
+
+# block user
+def block_user_service(db, user_id):
+    user = user_repo.get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.role == "admin":
+        raise HTTPException(status_code=403, detail="Cannot block admin")
+    return user_repo.update_user_block_status(db, user, True)
+
+# unblock user
+def unblock_user_service(db, user_id):
+    user = user_repo.get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user_repo.update_user_block_status(db, user, False)

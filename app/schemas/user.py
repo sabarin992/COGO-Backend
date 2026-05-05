@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
+from datetime import datetime
 
 class ResetPasswordRequest(BaseModel):
     email: EmailStr
@@ -7,3 +8,17 @@ class ResetPasswordRequest(BaseModel):
 class EditProfile(BaseModel):
     full_name: str
     phone: str | None = None
+
+
+class UserResponse(BaseModel):
+    id: int
+    full_name: str
+    email: str | None
+    phone: str | None
+    role: str
+    email_verified: bool
+    is_blocked: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
