@@ -72,4 +72,29 @@ def send_otp(email: str):
             status_code=500,
             detail="Something went wrong"
         )
-    
+
+def resend_otp(email: str):
+    try:
+        # generate OTP
+        otp = generate_otp()
+
+        # store in Redis (overwrites if exists)
+        redis_client.setex(
+            f"otp:{email}",
+            settings.OTP_EXPIRE_SECONDS,
+            json.dumps({
+            "otp": otp,
+        })
+        )
+
+        # send the otp to email
+        send_otp_email(email, otp)
+
+    except HTTPException:
+        raise
+
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Something went wrong"
+        )
