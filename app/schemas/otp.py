@@ -8,3 +8,6 @@ class OTPSendRequest(OTPBase):
 
 class OTPVerifyRequest(OTPBase):
     otp: str
+
+class OTPResendRequest(OTPBase):
+    pass

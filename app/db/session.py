@@ -7,12 +7,7 @@ db_url = settings.DATABASE_URL
 engine = create_engine(db_url)
 SessionLocal = sessionmaker(autoflush=False,autocommit=False,bind=engine)
 
-try:
-    with engine.connect() as connection:
-        print("connection successful")
-        pass
-except Exception as e:
-    print("DB Connection failed:", e)
+
 
 
 

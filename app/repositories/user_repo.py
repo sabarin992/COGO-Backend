@@ -7,6 +7,10 @@ def get_user_by_email(db: Session, email: str):
 def get_user_by_phone(db: Session, phone: str):
     return db.query(User).filter(User.phone == phone).first()
 
+# Fetch user using id
+def get_user_by_id(db, user_id):
+    return db.query(User).filter(User.id == user_id).first()
+
 
 def create_user(db: Session, user_data: dict):
     user = User(**user_data)
@@ -39,3 +43,33 @@ def get_or_create_user(db: Session, email: str, name: str):
     db.refresh(new_user)
 
     return new_user
+
+def edit_user_profile(db, user, data):
+    user.full_name = data.full_name
+    user.phone = data.phone
+
+    db.commit()
+    db.refresh(user)
+
+    return user
+
+
+# get all user except admin
+def get_all_users_except_admin(db: Session, search: str | None = None):
+    query = db.query(User).filter(User.role != "admin")
+    if search:
+        search_filter = f"%{search}%"
+        query = query.filter(
+            (User.full_name.ilike(search_filter)) |
+            (User.email.ilike(search_filter)) |
+            (User.phone.ilike(search_filter))
+        )
+    return query.all()
+
+
+# block or unblock user
+def update_user_block_status(db, user, status):
+    user.is_blocked = status
+    db.commit()
+    db.refresh(user)
+    return user
