@@ -82,3 +82,36 @@ def login_user(db, data:LoginRequest,response:Response):
     )
 
     return user
+
+
+def login_admin(db: Session, data: LoginRequest, response: Response):
+    # Retrieve user from database via repository
+    user = user_repo.get_user_by_email(db, data.email)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    # Check if the user has the required admin privileges
+    if user.role != "admin":
+        raise HTTPException(
+            status_code=403, 
+            detail="Access denied. Admin access only."
+        )
+
+    # Verify matching hashed password credentials
+    if not verify_password(data.password, user.password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    # Create administrative session access token
+    token = create_access_token({"sub": data.email})
+
+    # Set security authorization cookie
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+        max_age=900
+    )
+
+    return user

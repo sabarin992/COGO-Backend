@@ -6,6 +6,8 @@ from app.db.deps import get_db
 from sqlalchemy.orm import Session
 from app.models.user import User
 from app.services import auth_service
+from app.services.google_auth import verify_google_token
+from app.services import google_auth
 
 
 router = APIRouter()
@@ -21,12 +23,18 @@ def login(data:LoginRequest,response:Response,db:Session = Depends(get_db)):
     }
 
 
+@router.post("/admin/login")
+def admin_login(data: LoginRequest, response: Response, db: Session = Depends(get_db)):
+    user = auth_service.login_admin(db, data, response)
+    return {
+        "message": "Admin login successful",
+        "user_id": user.id,
+        "email": user.email
+    }
 
-from fastapi import APIRouter, HTTPException
-from app.schemas.auth import GoogleToken
-from app.services.google_auth import verify_google_token
-from app.core.security import create_access_token
-from app.services import google_auth
+
+
+
 
 
 

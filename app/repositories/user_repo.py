@@ -55,8 +55,16 @@ def edit_user_profile(db, user, data):
 
 
 # get all user except admin
-def get_all_users_except_admin(db: Session):
-    return db.query(User).filter(User.role != "admin").all()
+def get_all_users_except_admin(db: Session, search: str | None = None):
+    query = db.query(User).filter(User.role != "admin")
+    if search:
+        search_filter = f"%{search}%"
+        query = query.filter(
+            (User.full_name.ilike(search_filter)) |
+            (User.email.ilike(search_filter)) |
+            (User.phone.ilike(search_filter))
+        )
+    return query.all()
 
 
 # block or unblock user
