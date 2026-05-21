@@ -78,7 +78,8 @@ def get_all_users_except_admin(
 @router.patch("/admin/block/{user_id}", response_model=UserResponse)
 def block_user(
     user_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    admin = Depends(get_current_admin)
 ):
     return user_service.block_user_service(db, user_id)
 
@@ -86,7 +87,7 @@ def block_user(
 @router.patch("/admin/unblock/{user_id}", response_model=UserResponse)
 def unblock_user(
     user_id: int,
-    db: Session = Depends(get_db)
-
+    db: Session = Depends(get_db),
+    admin = Depends(get_current_admin)
 ):
     return user_service.unblock_user_service(db, user_id)

@@ -64,6 +64,9 @@ def login_user(db, data:LoginRequest,response:Response):
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
+    if user.is_blocked:
+        raise HTTPException(status_code=403, detail="User is blocked")
+
     # check password
     if not verify_password(data.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -89,6 +92,9 @@ def login_admin(db: Session, data: LoginRequest, response: Response):
     user = user_repo.get_user_by_email(db, data.email)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    if user.is_blocked:
+        raise HTTPException(status_code=403, detail="User is blocked")
 
     # Check if the user has the required admin privileges
     if user.role != "admin":

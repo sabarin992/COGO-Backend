@@ -8,9 +8,9 @@ from app.services import otp_service
 router = APIRouter()
 
 @router.post("/send-otp")
-def send_otp(data: OTPSendRequest):
+def send_otp(data: OTPSendRequest,db: Session = Depends(get_db)):
     try:
-        otp_service.send_otp(data.email)
+        otp_service.send_otp(db,data.email)
 
         return {
             "message": "OTP sent successfully"

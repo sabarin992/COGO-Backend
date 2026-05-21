@@ -87,9 +87,12 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/logout")
-def logout(response:Response,user=Depends(get_current_user)):
+def logout(response:Response):
     response.delete_cookie("access_token")
     return {"message":"Logout Successful"}
+
+
+# token black listing
 
 
 

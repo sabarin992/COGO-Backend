@@ -8,7 +8,6 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
 
     token = request.cookies.get("access_token")
 
-
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
@@ -26,10 +25,13 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
     if not email:
         raise HTTPException(status_code=401, detail="Invalid token payload")
 
-    # user = get_user_by_email(db, email)
+    user = user_repo.get_user_by_email(db, email)
 
-    # if not user:
-    #     raise HTTPException(status_code=401, detail="User not found")
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    if user.is_blocked:
+        raise HTTPException(status_code=403, detail="User is blocked")
 
     return email
 
@@ -43,15 +45,26 @@ def get_current_admin(request: Request, db: Session = Depends(get_db)):
     # remove "Bearer " if you added it
     if token.startswith("Bearer "):
         token = token.split(" ")[1]
+
     try:
         payload = verify_token(token)
-        email = payload.get("sub")
-        user = user_repo.get_user_by_email(db,email)
-        print(user.role)
-        if not user or user.role != "admin":
-            raise HTTPException(status_code=403, detail="Admin access only")
-
-        return user
-
-    except:
+    except Exception:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+    if payload is None:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    email = payload.get("sub")
+
+    if not email:
+        raise HTTPException(status_code=401, detail="Invalid token payload")
+
+    user = user_repo.get_user_by_email(db, email)
+
+    if not user or user.role != "admin":
+        raise HTTPException(status_code=403, detail="Admin access only")
+
+    if user.is_blocked:
+        raise HTTPException(status_code=403, detail="User is blocked")
+
+    return user

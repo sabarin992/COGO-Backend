@@ -51,6 +51,9 @@ def google_login(data, db):
     # ✅ FIX HERE
     user = get_or_create_user(db, email=email, name=name)
 
+    if user.is_blocked:
+        raise HTTPException(status_code=403, detail="User is blocked")
+
     access_token = create_access_token({"sub": email})
     # refresh_token = create_refresh_token({"user_id": user.id})
 

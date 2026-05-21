@@ -40,8 +40,13 @@ def verify_otp(db: Session, email: str, otp: str):
         raise HTTPException(status_code=500, detail="Something went wrong")
     
 
-def send_otp(email: str):
+def send_otp(db:Session,email: str):
     try:
+        user = user_repo.get_user_by_email(db,email)
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found in this email")
+      
         # prevent spam
         if redis_client.exists(f"otp:{email}"):
             raise HTTPException(
