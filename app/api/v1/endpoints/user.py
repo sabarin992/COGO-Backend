@@ -67,11 +67,12 @@ def edit_profile(
 @router.get("/admin-users", response_model=List[UserResponse])
 def get_all_users_except_admin(
     search: str | None = None,
+    status: str | None = None,
     db: Session = Depends(get_db),
     admin = Depends(get_current_admin)
 ):
     
-    users = user_service.get_users_except_admin_service(db, search)
+    users = user_service.get_users_except_admin_service(db, search, status)
     return users
 
 
