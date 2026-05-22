@@ -84,8 +84,20 @@ def edit_profile_service(db,email,data):
 
 
 # get all users except admin
-def get_users_except_admin_service(db, search: str | None = None, status: str | None = None):
-    return user_repo.get_all_users_except_admin(db, search, status)
+def get_users_except_admin_service(
+    db, 
+    search: str | None = None, 
+    status: str | None = None,
+    page: int = 1,
+    size: int = 5
+):
+    users, total = user_repo.get_all_users_except_admin(db, search, status, page, size)
+    return {
+        "users": users,
+        "total": total,
+        "page": page,
+        "size": size
+    }
 
 
 # block user

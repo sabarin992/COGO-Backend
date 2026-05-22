@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
+from typing import List
 
 class ResetPasswordRequest(BaseModel):
     email: EmailStr
@@ -22,3 +23,10 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class PaginatedUserResponse(BaseModel):
+    users: List[UserResponse]
+    total: int
+    page: int
+    size: int

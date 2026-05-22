@@ -55,7 +55,13 @@ def edit_user_profile(db, user, data):
 
 
 # get all user except admin
-def get_all_users_except_admin(db: Session, search: str | None = None, status: str | None = None):
+def get_all_users_except_admin(
+    db: Session, 
+    search: str | None = None, 
+    status: str | None = None,
+    page: int = 1,
+    size: int = 5
+):
     query = db.query(User).filter(User.role != "admin")
     if search:
         search_filter = f"%{search}%"
@@ -71,7 +77,11 @@ def get_all_users_except_admin(db: Session, search: str | None = None, status: s
             query = query.filter(User.is_blocked == True)
         elif status == "Pending":
             query = query.filter(User.id == -1)
-    return query.all()
+            
+    total = query.count()
+    offset = (page - 1) * size
+    users = query.offset(offset).limit(size).all()
+    return users, total
 
 
 # block or unblock user

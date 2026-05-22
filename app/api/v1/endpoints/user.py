@@ -2,7 +2,7 @@ from fastapi import APIRouter,Request,Depends
 from app.api.deps import get_current_user,get_current_admin
 from sqlalchemy.orm import Session
 from app.db.deps import get_db
-from app.schemas.user import ResetPasswordRequest,EditProfile,UserResponse
+from app.schemas.user import ResetPasswordRequest,EditProfile,UserResponse,PaginatedUserResponse
 from app.services import user_service
 from fastapi import HTTPException, status
 from app.core.exceptions import UserNotFoundError
@@ -64,16 +64,17 @@ def edit_profile(
     }
 
 
-@router.get("/admin-users", response_model=List[UserResponse])
+@router.get("/admin-users", response_model=PaginatedUserResponse)
 def get_all_users_except_admin(
     search: str | None = None,
     status: str | None = None,
+    page: int = 1,
+    size: int = 5,
     db: Session = Depends(get_db),
     admin = Depends(get_current_admin)
 ):
     
-    users = user_service.get_users_except_admin_service(db, search, status)
-    return users
+    return user_service.get_users_except_admin_service(db, search, status, page, size)
 
 
 @router.patch("/admin/block/{user_id}", response_model=UserResponse)
