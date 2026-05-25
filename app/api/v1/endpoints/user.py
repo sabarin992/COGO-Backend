@@ -7,6 +7,8 @@ from app.services import user_service
 from fastapi import HTTPException, status
 from app.core.exceptions import UserNotFoundError
 from typing import List
+from app.core.security import verify_token
+from app.repositories import user_repo
 
 
 router = APIRouter()
@@ -16,8 +18,32 @@ router = APIRouter()
 
 
 @router.get("/check-auth")
-def check_auth(user=Depends(get_current_user)):
-    return user
+def check_auth(request: Request, db: Session = Depends(get_db)):
+    token = request.cookies.get("access_token")
+    if not token:
+        return {"authenticated": False}
+
+    # remove "Bearer " if added
+    if token.startswith("Bearer "):
+        token = token.split(" ")[1]
+
+    try:
+        payload = verify_token(token)
+    except Exception:
+        return {"authenticated": False}
+
+    if payload is None:
+        return {"authenticated": False}
+
+    email = payload.get("sub")
+    if not email:
+        return {"authenticated": False}
+
+    user = user_repo.get_user_by_email(db, email)
+    if not user or user.is_blocked:
+        return {"authenticated": False}
+
+    return {"authenticated": True}
 
 
 @router.post("/reset-password")
