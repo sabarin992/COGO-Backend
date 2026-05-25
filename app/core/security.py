@@ -25,12 +25,27 @@ def create_access_token(data: dict):
     return token
 
 
+def create_refresh_token(data: dict):
+    payload = data.copy()
+
+    if "sub" not in payload:
+        raise ValueError("Token must contain 'sub'")
+
+    now = datetime.now(timezone.utc)
+
+    # setting expiry time (7 days), issued at, token type in payload 
+    payload.update({
+        "exp": now + timedelta(days=7),
+        "iat": now,
+        "token_type": "refresh"
+    })
+
+    # generate refresh token
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return token
+
+
 def verify_token(token: str):
-    payload = jwt.decode(
-            token,
-            settings.SECRET_KEY,
-            algorithms=settings.ALGORITHM
-        )
     try:
         payload = jwt.decode(
             token,

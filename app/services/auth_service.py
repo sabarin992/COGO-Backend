@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.repositories import user_repo
-from app.core.security import hash_password,verify_password,create_access_token
+from app.core.security import hash_password,verify_password,create_access_token,create_refresh_token
 from fastapi import HTTPException,Response
 from sqlalchemy.exc import IntegrityError
 from app.schemas.auth import LoginRequest
@@ -71,8 +71,9 @@ def login_user(db, data:LoginRequest,response:Response):
     if not verify_password(data.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-     # create access token
+     # create access and refresh tokens
     token = create_access_token({"sub":data.email})
+    refresh_token = create_refresh_token({"sub":data.email})
 
     # set the access token in the cookies
     response.set_cookie(
@@ -81,7 +82,17 @@ def login_user(db, data:LoginRequest,response:Response):
         httponly=True,
         samesite="lax",
         secure=False,
-        max_age=900
+        max_age=60
+    )
+
+    # set the refresh token in the cookies
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+        max_age=604800 # 7 days
     )
 
     return user
@@ -107,8 +118,9 @@ def login_admin(db: Session, data: LoginRequest, response: Response):
     if not verify_password(data.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # Create administrative session access token
+    # Create administrative session access and refresh tokens
     token = create_access_token({"sub": data.email})
+    refresh_token = create_refresh_token({"sub": data.email})
 
     # Set security authorization cookie
     response.set_cookie(
@@ -117,7 +129,17 @@ def login_admin(db: Session, data: LoginRequest, response: Response):
         httponly=True,
         samesite="lax",
         secure=False,
-        max_age=900
+        max_age=60
+    )
+
+    # Set refresh token cookie
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+        max_age=604800 # 7 days
     )
 
     return user

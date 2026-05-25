@@ -20,7 +20,7 @@ def verify_google_token(token: str):
 
 from fastapi import HTTPException
 from app.repositories.user_repo import get_or_create_user
-from app.core.security import create_access_token
+from app.core.security import create_access_token, create_refresh_token
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from app.core.config import settings   # better practice
@@ -55,11 +55,11 @@ def google_login(data, db):
         raise HTTPException(status_code=403, detail="User is blocked")
 
     access_token = create_access_token({"sub": email})
-    # refresh_token = create_refresh_token({"user_id": user.id})
+    refresh_token = create_refresh_token({"sub": email})
 
     return {
         "access_token": access_token,
-        # "refresh_token": refresh_token,
+        "refresh_token": refresh_token,
         "user": {
             "email": email,
             "name": name

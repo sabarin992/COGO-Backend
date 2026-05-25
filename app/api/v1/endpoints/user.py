@@ -21,7 +21,7 @@ router = APIRouter()
 def check_auth(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("access_token")
     if not token:
-        return {"authenticated": False}
+        raise HTTPException(status_code=401, detail="Not authenticated")
 
     # remove "Bearer " if added
     if token.startswith("Bearer "):
@@ -30,18 +30,18 @@ def check_auth(request: Request, db: Session = Depends(get_db)):
     try:
         payload = verify_token(token)
     except Exception:
-        return {"authenticated": False}
+        raise HTTPException(status_code=401, detail="Not authenticated")
 
     if payload is None:
-        return {"authenticated": False}
+        raise HTTPException(status_code=401, detail="Not authenticated")
 
     email = payload.get("sub")
     if not email:
-        return {"authenticated": False}
+        raise HTTPException(status_code=401, detail="Not authenticated")
 
     user = user_repo.get_user_by_email(db, email)
     if not user or user.is_blocked:
-        return {"authenticated": False}
+        raise HTTPException(status_code=401, detail="Not authenticated")
 
     return {"authenticated": True}
 
