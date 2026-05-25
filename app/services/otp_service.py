@@ -45,7 +45,7 @@ def send_otp(db:Session,email: str):
         user = user_repo.get_user_by_email(db,email)
 
         if not user:
-            raise HTTPException(status_code=404, detail="User not found in this email")
+            raise HTTPException(status_code=404, detail="User with this email does not exist")
       
         # prevent spam
         if redis_client.exists(f"otp:{email}"):
