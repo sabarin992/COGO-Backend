@@ -82,7 +82,7 @@ def login_user(db, data:LoginRequest,response:Response):
         httponly=True,
         samesite="lax",
         secure=False,
-        max_age=60
+        max_age=900
     )
 
     # set the refresh token in the cookies
@@ -129,7 +129,7 @@ def login_admin(db: Session, data: LoginRequest, response: Response):
         httponly=True,
         samesite="lax",
         secure=False,
-        max_age=60
+        max_age=900
     )
 
     # Set refresh token cookie

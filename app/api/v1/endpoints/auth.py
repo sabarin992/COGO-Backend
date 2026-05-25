@@ -55,7 +55,7 @@ def google_login(data: GoogleToken, response: Response, db: Session = Depends(ge
         httponly=True,
         secure=False,
         samesite="Lax",
-        max_age=60
+        max_age=900
     )
 
     # 🍪 Set refresh token cookie
@@ -128,7 +128,7 @@ def refresh(request: Request, response: Response, db: Session = Depends(get_db))
         httponly=True,
         samesite="lax",
         secure=False,
-        max_age=60
+        max_age=900
     )
     
     response.set_cookie(
