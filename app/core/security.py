@@ -2,6 +2,8 @@ from jose import jwt,JWTError
 from datetime import datetime,timedelta,timezone
 from app.core.config import settings
 from passlib.context import CryptContext
+from uuid import uuid4
+from passlib.context import CryptContext
 
 
 def create_access_token(data: dict):
@@ -25,7 +27,27 @@ def create_access_token(data: dict):
     return token
 
 
+# def create_refresh_token(data: dict):
+#     payload = data.copy()
+
+#     if "sub" not in payload:
+#         raise ValueError("Token must contain 'sub'")
+
+#     now = datetime.now(timezone.utc)
+
+#     # setting expiry time (7 days), issued at, token type in payload 
+#     payload.update({
+#         "exp": now + timedelta(days=7),
+#         "iat": now,
+#         "token_type": "refresh"
+#     })
+
+#     # generate refresh token
+#     token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+#     return token
+
 def create_refresh_token(data: dict):
+
     payload = data.copy()
 
     if "sub" not in payload:
@@ -33,15 +55,21 @@ def create_refresh_token(data: dict):
 
     now = datetime.now(timezone.utc)
 
-    # setting expiry time (7 days), issued at, token type in payload 
+    jti = str(uuid4())
+
     payload.update({
+        "jti": jti,
         "exp": now + timedelta(days=7),
         "iat": now,
         "token_type": "refresh"
     })
 
-    # generate refresh token
-    token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    token = jwt.encode(
+        payload,
+        settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM
+    )
+
     return token
 
 
@@ -57,7 +85,7 @@ def verify_token(token: str):
         return None
     
 
-from passlib.context import CryptContext
+
 
 pwd_context = CryptContext(
     schemes=["argon2"],
