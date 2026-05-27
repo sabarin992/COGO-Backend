@@ -59,7 +59,7 @@ def create_refresh_token(data: dict):
 
     payload.update({
         "jti": jti,
-        "exp": now + timedelta(days=7),
+        "exp": now + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
         "iat": now,
         "token_type": "refresh"
     })

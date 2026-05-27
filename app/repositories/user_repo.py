@@ -75,8 +75,7 @@ def get_all_users_except_admin(
             query = query.filter(User.is_blocked == False)
         elif status == "Blocked":
             query = query.filter(User.is_blocked == True)
-        elif status == "Pending":
-            query = query.filter(User.id == -1)
+       
             
     total = query.count()
     offset = (page - 1) * size

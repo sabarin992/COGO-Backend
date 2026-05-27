@@ -66,6 +66,9 @@ def login_user(db, data:LoginRequest,response:Response):
 
     if user.is_blocked:
         raise HTTPException(status_code=403, detail="User is blocked")
+    
+    if not user.email_verified:
+        raise HTTPException(status_code=403, detail="User is not verified by Email")
 
     # check password
     if not verify_password(data.password, user.password):
