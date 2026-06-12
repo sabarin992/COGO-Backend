@@ -1,8 +1,8 @@
-from fastapi import APIRouter,Request,Depends
+from fastapi import APIRouter,Request,Depends,Response
 from app.api.deps import get_current_user,get_current_admin
 from sqlalchemy.orm import Session
 from app.db.deps import get_db
-from app.schemas.user import ResetPasswordRequest,EditProfile,UserResponse,PaginatedUserResponse
+from app.schemas.user import ResetPasswordRequest,EditProfile,UserResponse,PaginatedUserResponse,EmailUpdateRequest,VerifyEmailUpdateRequest
 from app.services import user_service
 from fastapi import HTTPException, status
 from app.core.exceptions import UserNotFoundError
@@ -88,6 +88,33 @@ def edit_profile(
         "message": "Profile updated successfully",
         "user": updated_user
     }
+
+
+@router.post("/request-email-update")
+def request_email_update(
+    data: EmailUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user_email=Depends(get_current_user)
+):
+    user_service.request_email_update_service(db, current_user_email, data.new_email)
+    return {"message": "OTP sent successfully"}
+
+
+@router.post("/verify-email-update")
+def verify_email_update(
+    data: VerifyEmailUpdateRequest,
+    response: Response,
+    db: Session = Depends(get_db),
+    current_user_email=Depends(get_current_user)
+):
+    updated_user = user_service.verify_email_update_service(
+        db, current_user_email, data.new_email, data.otp, response
+    )
+    return {
+        "message": "Email updated successfully",
+        "user": updated_user
+    }
+
 
 
 @router.get("/admin-users", response_model=PaginatedUserResponse)

@@ -10,6 +10,14 @@ class EditProfile(BaseModel):
     full_name: str
     phone: str | None = None
 
+class EmailUpdateRequest(BaseModel):
+    new_email: EmailStr
+
+class VerifyEmailUpdateRequest(BaseModel):
+    new_email: EmailStr
+    otp: str
+
+
 
 class UserResponse(BaseModel):
     id: int
