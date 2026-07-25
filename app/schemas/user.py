@@ -9,6 +9,7 @@ class ResetPasswordRequest(BaseModel):
 class EditProfile(BaseModel):
     full_name: str
     phone: str | None = None
+    avatar: str | None = None
 
 class EmailUpdateRequest(BaseModel):
     new_email: EmailStr

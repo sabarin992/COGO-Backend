@@ -9,6 +9,16 @@ from app.core.redis import redis_client
 from app.core.config import settings
 from app.utils.otp import generate_otp
 from app.utils.email import send_otp_email
+import cloudinary
+import cloudinary.uploader
+
+cloudinary.config(
+    cloud_name=settings.CLOUDINARY_CLOUD_NAME,
+    api_key=settings.CLOUDINARY_API_KEY,
+    api_secret=settings.CLOUDINARY_API_SECRET,
+    secure=True
+)
+
 
 
 
@@ -72,6 +82,23 @@ def edit_profile_service(db,email,data):
             detail="This phone number is already in use."
         )
 
+    # Handle avatar upload to Cloudinary
+    if data.avatar and data.avatar.startswith("data:"):
+        # If user has an old picture, delete it from Cloudinary first
+        if user.profile_pic_public_id:
+            try:
+                cloudinary.uploader.destroy(user.profile_pic_public_id)
+            except Exception as e:
+                print("Failed to delete old avatar from Cloudinary:", e)
+        
+        # Upload new image
+        try:
+            upload_result = cloudinary.uploader.upload(data.avatar)
+            user.profile_pic = upload_result.get("secure_url")
+            user.profile_pic_public_id = upload_result.get("public_id")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to upload profile picture to Cloudinary: {str(e)}")
+
     # Update handle DB error
     try:
         return user_repo.edit_user_profile(
@@ -130,9 +157,6 @@ def request_email_update_service(db, current_user_email, new_email):
     existing_user = user_repo.get_user_by_email(db, new_email)
     if existing_user:
         raise HTTPException(status_code=400, detail="This email is already in use")
-
-    if redis_client.exists(f"otp:{new_email}"):
-        raise HTTPException(status_code=400, detail="OTP already sent. Try again later")
 
     otp = generate_otp()
 

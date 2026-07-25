@@ -60,7 +60,19 @@ def profile(email=Depends(get_current_user), db: Session = Depends(get_db)):
 
     try:
         user = user_service.profile_service(db, email)
-        return user
+        return {
+            "id": user.id,
+            "full_name": user.full_name,
+            "email": user.email,
+            "phone": user.phone,
+            "role": user.role,
+            "email_verified": user.email_verified,
+            "is_blocked": user.is_blocked,
+            "created_at": user.created_at,
+            "avatar": user.profile_pic,
+            "profile_pic": user.profile_pic,
+            "profile_pic_public_id": user.profile_pic_public_id,
+        }
 
     except UserNotFoundError as e:
         raise HTTPException(
@@ -86,7 +98,19 @@ def edit_profile(
 
     return {
         "message": "Profile updated successfully",
-        "user": updated_user
+        "user": {
+            "id": updated_user.id,
+            "full_name": updated_user.full_name,
+            "email": updated_user.email,
+            "phone": updated_user.phone,
+            "role": updated_user.role,
+            "email_verified": updated_user.email_verified,
+            "is_blocked": updated_user.is_blocked,
+            "created_at": updated_user.created_at,
+            "avatar": updated_user.profile_pic,
+            "profile_pic": updated_user.profile_pic,
+            "profile_pic_public_id": updated_user.profile_pic_public_id,
+        }
     }
 
 
@@ -112,7 +136,19 @@ def verify_email_update(
     )
     return {
         "message": "Email updated successfully",
-        "user": updated_user
+        "user": {
+            "id": updated_user.id,
+            "full_name": updated_user.full_name,
+            "email": updated_user.email,
+            "phone": updated_user.phone,
+            "role": updated_user.role,
+            "email_verified": updated_user.email_verified,
+            "is_blocked": updated_user.is_blocked,
+            "created_at": updated_user.created_at,
+            "avatar": updated_user.profile_pic,
+            "profile_pic": updated_user.profile_pic,
+            "profile_pic_public_id": updated_user.profile_pic_public_id,
+        }
     }
 
 
