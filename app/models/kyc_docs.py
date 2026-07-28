@@ -2,6 +2,7 @@ from sqlalchemy import (
     Column,
     Integer,
     String,
+    Boolean,
     ForeignKey,
     DateTime,
     Enum,
@@ -34,7 +35,7 @@ class KYC(Base):
     document_number = Column(String(100), nullable=False)
 
     is_verified = Column(
-        String,
+        Boolean,
         default=False,
         nullable=False
     )
