@@ -94,6 +94,7 @@ def edit_profile(
     db: Session = Depends(get_db),
     email=Depends(get_current_user)
 ):
+
     updated_user = user_service.edit_profile_service(db, email, data)
 
     return {
