@@ -48,3 +48,15 @@ def get_kyc(db,email):
             detail="User not found"
         )
     return kyc_repo.get_kyc(db,user)
+
+
+def get_admin_kyc_list_service(db, search=None, status=None, page=1, size=10):
+    return kyc_repo.get_admin_kyc_list(db, search, status, page, size)
+
+
+def approve_kyc_service(db, kyc_id):
+    return kyc_repo.approve_kyc(db, kyc_id)
+
+
+def reject_kyc_service(db, kyc_id, reason):
+    return kyc_repo.reject_kyc(db, kyc_id, reason)

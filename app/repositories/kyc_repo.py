@@ -49,9 +49,66 @@ def create_kyc(db, data, user):
 
 
 
+from app.models.user import User
+from app.models.kyc_docs import KYCStatus
+
 def get_kyc(db,user):
     kyc = db.query(KYC).filter(KYC.user_id == user.id).first()
     return kyc
+
+
+def get_admin_kyc_list(db, search=None, status=None, page=1, size=10):
+    query = db.query(KYC).join(User)
+
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.filter(
+            (User.full_name.ilike(search_pattern)) |
+            (User.email.ilike(search_pattern)) |
+            (KYC.document_number.ilike(search_pattern))
+        )
+
+    if status and status.lower() != "all":
+        query = query.filter(KYC.status == status.lower())
+
+    total = query.count()
+    offset = (page - 1) * size
+    items = query.order_by(KYC.created_at.desc()).offset(offset).limit(size).all()
+
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "size": size,
+        "pages": (total + size - 1) // size if total > 0 else 1
+    }
+
+
+def approve_kyc(db, kyc_id):
+    kyc = db.query(KYC).filter(KYC.kyc_id == kyc_id).first()
+    if not kyc:
+        raise HTTPException(status_code=404, detail="KYC record not found")
+    kyc.status = KYCStatus.VERIFIED
+    kyc.is_verified = True
+    kyc.rejection_reason = None
+    if kyc.user:
+        kyc.user.role = "rider"
+    db.commit()
+    db.refresh(kyc)
+    return kyc
+
+
+def reject_kyc(db, kyc_id, reason):
+    kyc = db.query(KYC).filter(KYC.kyc_id == kyc_id).first()
+    if not kyc:
+        raise HTTPException(status_code=404, detail="KYC record not found")
+    kyc.status = KYCStatus.REJECTED
+    kyc.is_verified = False
+    kyc.rejection_reason = reason
+    db.commit()
+    db.refresh(kyc)
+    return kyc
+
 
 
 # from app.models.kyc_docs import KYC
