@@ -33,6 +33,12 @@ class User(Base):
         cascade="all, delete-orphan"
     )
 
+    vehicles = relationship(
+    "Vehicle",
+    back_populates="user",
+    cascade="all, delete-orphan"
+)
+
     # Relationships
     # kyc_documents = relationship("KYCDocument", back_populates="user")
     # vehicles = relationship("Vehicle", back_populates="owner")
