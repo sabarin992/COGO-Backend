@@ -30,3 +30,7 @@ class Vehicle(Base):
 
     # Relationship
     user = relationship("User", back_populates="vehicles")
+    rides = relationship(
+        "Ride",
+        back_populates="vehicle"
+    )

@@ -8,6 +8,7 @@ from app.db.base import Base
 from app.models.user import User
 from app.models.kyc_docs import KYC
 from app.models.vehicle import Vehicle
+from app.models.ride import Ride
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
