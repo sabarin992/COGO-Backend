@@ -4,6 +4,7 @@ from app.models.ride import Ride
 from app.schemas.ride import RideCreate
 
 
+# create ride
 def create_ride(
     db: Session,
     ride_data: RideCreate,
@@ -25,3 +26,14 @@ def create_ride(
     db.refresh(ride)
 
     return ride
+
+
+# Get all rides posted by a specific driver.
+def get_my_rides(db: Session, driver_id: int):
+  
+    return (
+        db.query(Ride)
+        .filter(Ride.driver_id == driver_id)
+        .order_by(Ride.created_at.desc())
+        .all()
+    )

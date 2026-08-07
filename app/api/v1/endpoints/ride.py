@@ -1,17 +1,16 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
 from app.db.deps import get_db
 from app.api.deps import get_current_user
-
 from app.models.user import User
+from app.services import ride_service
 
 from app.schemas.ride import (
     RideCreate,
     RideResponse,
 )
 
-from app.services import ride_service
+
 
 
 router = APIRouter()
@@ -34,3 +33,17 @@ def create_ride(
     )
 
     return ride
+
+
+@router.get(
+    "/my-rides",
+    response_model=list[RideResponse],
+)
+def get_my_rides(
+    db: Session = Depends(get_db),
+    email = Depends(get_current_user),
+):
+    return ride_service.get_driver_rides_service(
+        db=db,
+        email=email,
+    )

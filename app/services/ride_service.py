@@ -54,3 +54,22 @@ def create_ride(
     )
 
     return ride
+
+
+
+# Get all rides posted by the logged-in driver.
+def get_driver_rides_service(db: Session, email):
+
+
+    driver = user_repo.get_user_by_email(db, email)
+    
+    if not driver:
+        raise NotFoundException("User Not Found")
+  
+
+    rides = ride_repo.get_my_rides(db, driver.id)
+
+    if not rides:
+        raise NotFoundException("No rides found.")
+
+    return rides

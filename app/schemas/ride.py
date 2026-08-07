@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import datetime, date, time
 
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -18,16 +18,15 @@ class RideCreate(BaseModel):
 
 class RideResponse(BaseModel):
     ride_id: int
-    driver_id: int
-    vehicle_id: int
-
     source: str
     destination: str
     route: str | None
-
     travel_date: date
     travel_time: time
-
     available_seats: int
+    vehicle_id: int
+    driver_id: int
+    created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
