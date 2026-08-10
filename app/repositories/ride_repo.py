@@ -37,3 +37,11 @@ def get_my_rides(db: Session, driver_id: int):
         .order_by(Ride.created_at.desc())
         .all()
     )
+
+# get ride by using vehicle id
+def get_ride_by_vehicle_id(db: Session, vehicle_id: int):
+    return (
+        db.query(Ride)
+        .filter(Ride.vehicle_id == vehicle_id)
+        .first()
+    )

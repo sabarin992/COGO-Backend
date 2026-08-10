@@ -1,7 +1,7 @@
 from fastapi import UploadFile, HTTPException
 from sqlalchemy.orm import Session
 from app.models.vehicle import Vehicle
-from app.repositories import vehicle_repo, user_repo
+from app.repositories import vehicle_repo, user_repo, ride_repo
 from app.utils.cloudinary import upload_multiple_images
 from app.core.exceptions import BadRequestException, NotFoundException, ForbiddenException
 
@@ -131,6 +131,16 @@ def delete_vehicle_service(db: Session, email: str, vehicle_id: int) -> None:
     vehicle = vehicle_repo.get_vehicle_by_id(db, vehicle_id)
     if not vehicle:
         raise NotFoundException("Vehicle not found")
+
+    ride = ride_repo.get_ride_by_vehicle_id(
+        db,
+        vehicle_id
+    )
+
+    if ride:
+        raise BadRequestException(
+            "This vehicle cannot be deleted because it is associated with an existing ride."
+        )
 
     if vehicle.user_id != user.id:
         raise ForbiddenException("Not authorized to delete this vehicle")
