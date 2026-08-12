@@ -47,3 +47,19 @@ def get_my_rides(
         db=db,
         email=email,
     )
+
+
+
+@router.get("/{ride_id}",response_model=RideResponse)
+def get_ride(
+    ride_id: int,
+    db: Session = Depends(get_db),
+    email = Depends(get_current_user),
+):
+    return ride_service.get_ride_by_id_service(
+        db=db,
+        ride_id=ride_id,
+        email = email,
+    )
+
+

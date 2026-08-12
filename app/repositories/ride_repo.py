@@ -45,3 +45,17 @@ def get_ride_by_vehicle_id(db: Session, vehicle_id: int):
         .filter(Ride.vehicle_id == vehicle_id)
         .first()
     )
+
+
+# get ride using rider_id and driver_id
+# (We don't want a driver to access another driver's ride. so that i added driver_id)
+def get_ride_by_id(db: Session, ride_id: int, driver_id: int):
+    return (
+        db.query(Ride)
+        .filter(
+            Ride.ride_id == ride_id,
+            Ride.driver_id == driver_id
+        )
+        .first()
+    )
+

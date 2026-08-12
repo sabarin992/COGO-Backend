@@ -30,3 +30,7 @@ class RideResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+    # from_attributes=True tells Pydantic that it can read values from the SQLAlchemy object's attributes
+
+
