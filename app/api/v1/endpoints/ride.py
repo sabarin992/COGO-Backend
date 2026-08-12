@@ -8,6 +8,7 @@ from app.services import ride_service
 from app.schemas.ride import (
     RideCreate,
     RideResponse,
+    RideUpdate
 )
 
 
@@ -60,6 +61,23 @@ def get_ride(
         db=db,
         ride_id=ride_id,
         email = email,
+    )
+
+
+
+@router.put("/{ride_id}",response_model=RideResponse)
+def update_ride(
+    ride_id: int,
+    ride_data: RideUpdate,
+    db: Session = Depends(get_db),
+    email=Depends(get_current_user),
+):
+    
+    return ride_service.update_ride_service(
+        db=db,
+        ride_id=ride_id,
+        email=email,
+        ride_data=ride_data,
     )
 
 

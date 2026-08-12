@@ -34,3 +34,11 @@ class RideResponse(BaseModel):
     # from_attributes=True tells Pydantic that it can read values from the SQLAlchemy object's attributes
 
 
+class RideUpdate(BaseModel):
+    source: str | None = None
+    destination: str | None = None
+    route: str | None = None
+    travel_date: date | None = None
+    travel_time: time | None = None
+    available_seats: int | None = None
+    vehicle_id: int | None = None

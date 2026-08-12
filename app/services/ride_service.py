@@ -8,7 +8,8 @@ from app.repositories import (
     )
 
 from app.schemas.ride import (
-    RideCreate
+    RideCreate,
+    RideUpdate
     )
 
 from app.core.exceptions import (
@@ -100,6 +101,35 @@ def get_ride_by_id_service(
         db=db,
         ride_id=ride_id,
         driver_id=user.id
+    )
+
+    if not ride:
+        raise NotFoundException("Ride not found.")
+
+    return ride
+
+
+def update_ride_service(
+    db: Session,
+    ride_id: int,
+    email: EmailStr,
+    ride_data: RideUpdate,
+):
+    user = user_repo.get_user_by_email(db, email)
+
+    if not user:
+        raise NotFoundException("User not found.")
+
+    update_data = ride_data.model_dump(exclude_unset=True)
+
+    if not update_data:
+        raise BadRequestException("No fields provided for update.")
+
+    ride = ride_repo.update_ride(
+        db=db,
+        ride_id=ride_id,
+        driver_id=user.id,
+        ride_data=update_data,
     )
 
     if not ride:
