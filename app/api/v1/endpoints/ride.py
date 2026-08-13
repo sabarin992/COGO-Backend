@@ -16,7 +16,7 @@ from app.schemas.ride import (
 
 router = APIRouter()
 
-
+# create ride
 @router.post(
     "/",
     response_model=RideResponse,
@@ -35,7 +35,7 @@ def create_ride(
 
     return ride
 
-
+# Get all loggedin user ride
 @router.get(
     "/my-rides",
     response_model=list[RideResponse],
@@ -50,7 +50,7 @@ def get_my_rides(
     )
 
 
-
+# Get one ride
 @router.get("/{ride_id}",response_model=RideResponse)
 def get_ride(
     ride_id: int,
@@ -64,7 +64,7 @@ def get_ride(
     )
 
 
-
+# Edit ride
 @router.put("/{ride_id}",response_model=RideResponse)
 def update_ride(
     ride_id: int,
@@ -81,3 +81,15 @@ def update_ride(
     )
 
 
+# Delete ride
+@router.delete("/{ride_id}")
+def delete_ride(
+    ride_id: int,
+    db: Session = Depends(get_db),
+    email=Depends(get_current_user),
+):
+    return ride_service.delete_ride_service(
+        db=db,
+        ride_id=ride_id,
+        email=email,
+    )

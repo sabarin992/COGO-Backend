@@ -109,6 +109,7 @@ def get_ride_by_id_service(
     return ride
 
 
+# Edit ride
 def update_ride_service(
     db: Session,
     ride_id: int,
@@ -130,6 +131,29 @@ def update_ride_service(
         ride_id=ride_id,
         driver_id=user.id,
         ride_data=update_data,
+    )
+
+    if not ride:
+        raise NotFoundException("Ride not found.")
+
+    return ride
+
+
+# Delete the ride
+def delete_ride_service(
+    db: Session,
+    ride_id: int,
+    email: EmailStr,
+):
+    user = user_repo.get_user_by_email(db, email)
+
+    if not user:
+        raise NotFoundException("User not found.")
+
+    ride = ride_repo.delete_ride(
+        db=db,
+        ride_id=ride_id,
+        driver_id=user.id,
     )
 
     if not ride:

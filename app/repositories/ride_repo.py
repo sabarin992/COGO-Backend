@@ -87,3 +87,26 @@ def update_ride(
 
     return ride
 
+# delete ride using ride_id and driver_id
+def delete_ride(
+    db: Session,
+    ride_id: int,
+    driver_id: int,
+):
+    ride = (
+        db.query(Ride)
+        .filter(
+            Ride.ride_id == ride_id,
+            Ride.driver_id == driver_id,
+        )
+        .first()
+    )
+
+    if not ride:
+        return None
+
+    db.delete(ride)
+    db.commit()
+
+    return ride
+
