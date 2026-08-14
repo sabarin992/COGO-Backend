@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.models.user import User
+from datetime import datetime, timedelta
 
 from app.repositories import (
     ride_repo, 
@@ -9,8 +10,10 @@ from app.repositories import (
 
 from app.schemas.ride import (
     RideCreate,
-    RideUpdate
-    )
+    RideUpdate,
+    RideSearchRequest,
+    RideSearchResponse,
+)
 
 from app.core.exceptions import (
     BadRequestException,
@@ -160,5 +163,73 @@ def delete_ride_service(
         raise NotFoundException("Ride not found.")
 
     return ride
+
+
+# Search rides
+def search_rides_service(
+    db: Session,
+    search_data: RideSearchRequest
+    ):
+    
+    requested_datetime = datetime.combine(
+        search_data.travel_date,
+        search_data.travel_time,
+    )
+
+    start_datetime = (
+        requested_datetime - timedelta(minutes=30)
+    )
+
+    end_datetime = (
+        requested_datetime + timedelta(minutes=30)
+    )
+
+    start_time = start_datetime.time()
+    end_time = end_datetime.time()
+
+    rides = ride_repo.search_rides(
+        db=db,
+        search_data=search_data,
+        start_time=start_time,
+        end_time=end_time,
+    )
+
+    if not rides:
+        raise NotFoundException(
+            "No rides found matching your search."
+        )
+
+    response = []
+
+    for ride, driver, vehicle in rides:
+
+        response.append(
+            RideSearchResponse(
+                ride_id=ride.ride_id,
+
+                source=ride.source,
+                destination=ride.destination,
+
+                travel_date=ride.travel_date,
+                travel_time=ride.travel_time,
+
+                available_seats=ride.available_seats,
+
+                driver_id=driver.id,
+                driver_name=driver.full_name,
+                driver_profile_pic=driver.profile_pic,
+
+                vehicle_id=vehicle.id,
+                vehicle_type=vehicle.vehicle_type,
+                vehicle_brand=vehicle.brand,
+                vehicle_model=vehicle.model,
+                vehicle_color=vehicle.color,
+            )
+        )
+
+    return response
+
+
+
 
 

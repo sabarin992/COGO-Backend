@@ -1,7 +1,14 @@
 from sqlalchemy.orm import Session
 
 from app.models.ride import Ride
-from app.schemas.ride import RideCreate
+from app.models.user import User
+from app.models.vehicle import Vehicle
+
+from app.schemas.ride import (
+    RideCreate,
+    RideSearchRequest,
+
+)
 
 
 # create ride
@@ -110,3 +117,35 @@ def delete_ride(
 
     return ride
 
+
+# Search rides
+def search_rides(
+    db: Session,
+    search_data: RideSearchRequest,
+    start_time,
+    end_time,
+):
+    return (
+        db.query(Ride, User, Vehicle)
+        .join(
+            User,
+            Ride.driver_id == User.id
+        )
+        .join(
+            Vehicle,
+            Ride.vehicle_id == Vehicle.id
+        )
+        .filter(
+            Ride.source.ilike(search_data.source),
+            Ride.destination.ilike(search_data.destination),
+            Ride.travel_date == search_data.travel_date,
+
+            # Time range
+            Ride.travel_time >= start_time,
+            Ride.travel_time <= end_time,
+
+            Ride.available_seats >= search_data.seat_required,
+            User.is_blocked.is_(False),
+        )
+        .all()
+    )

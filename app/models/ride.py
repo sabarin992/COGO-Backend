@@ -21,10 +21,10 @@ class Ride(Base):
     ride_id = Column(Integer, primary_key=True, index=True)
 
     driver_id = Column(
-    Integer,
-    ForeignKey("users.id"),
-    nullable=False
-)
+            Integer,
+            ForeignKey("users.id"),
+            nullable=False
+        )
 
     vehicle_id = Column(
             Integer,

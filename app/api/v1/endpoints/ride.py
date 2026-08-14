@@ -8,7 +8,9 @@ from app.services import ride_service
 from app.schemas.ride import (
     RideCreate,
     RideResponse,
-    RideUpdate
+    RideUpdate,
+    RideSearchRequest,
+    RideSearchResponse
 )
 
 
@@ -92,4 +94,19 @@ def delete_ride(
         db=db,
         ride_id=ride_id,
         email=email,
+    )
+
+
+@router.post(
+    "/search",
+    response_model=list[RideSearchResponse]
+)
+def search_rides(
+    search_data: RideSearchRequest,
+    db: Session = Depends(get_db),
+    email=Depends(get_current_user),
+):
+    return ride_service.search_rides_service(
+        db=db,
+        search_data=search_data,
     )
