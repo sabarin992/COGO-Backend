@@ -308,7 +308,7 @@ def create_ride_request_service(
         raise NotFoundException("User not found.")
 
     passenger_id = user.id
-    
+
     # Get the ride
     ride = ride_repo.get_ride_details_by_id(
         db=db,
@@ -355,6 +355,58 @@ def create_ride_request_service(
     )
 
     return ride_request
+
+
+# Get all ride requests for a ride owned by the logged-in driver.
+def get_ride_requests_service(
+    db: Session,
+    ride_id: int,
+    email: EmailStr,
+):
+    # Get logged-in driver
+    driver = user_repo.get_user_by_email(
+        db=db,
+        email=email,
+    )
+
+    if not driver:
+        raise NotFoundException(
+            "User not found."
+        )
+
+    # Check whether the ride belongs to this driver
+    ride = ride_repo.get_ride_by_id(
+        db=db,
+        ride_id=ride_id,
+        driver_id=driver.id,
+    )
+
+    if not ride:
+        raise NotFoundException(
+            "Ride not found."
+        )
+
+    # Get ride requests
+    requests = ride_request_repo.get_ride_requests(
+        db=db,
+        ride_id=ride_id,
+        driver_id=driver.id,
+    )
+
+    # Convert database objects into response data
+    return [
+        {
+            "ride_request_id": request.ride_request_id,
+            "ride_id": request.ride_id,
+            "passenger_id": request.passenger_id,
+            "passenger_name": request.passenger.full_name,
+            "passenger_profile_pic": request.passenger.profile_pic,
+            "seats_requested": request.seats_requested,
+            "status": request.status,
+            "created_at": request.created_at,
+        }
+        for request in requests
+    ]
 
 
 

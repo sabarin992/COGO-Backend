@@ -1,6 +1,7 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session,joinedload
 
 from app.models.ride_request import RideRequest
+from app.models.ride import Ride
 
 
 # Get an existing request from a passenger for a ride
@@ -38,3 +39,30 @@ def create_ride_request(
     db.refresh(ride_request)
 
     return ride_request
+
+
+# Get all requests for a ride
+# Get all requests for a ride owned by the driver
+def get_ride_requests(
+    db: Session,
+    ride_id: int,
+    driver_id: int,
+):
+    return (
+        db.query(RideRequest)
+        .options(
+            joinedload(RideRequest.passenger)
+        )
+        .join(
+            Ride,
+            Ride.ride_id == RideRequest.ride_id
+        )
+        .filter(
+            RideRequest.ride_id == ride_id,
+            Ride.driver_id == driver_id,
+        )
+        .order_by(
+            RideRequest.created_at.desc()
+        )
+        .all()
+    )

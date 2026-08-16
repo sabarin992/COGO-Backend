@@ -4,6 +4,8 @@ from app.db.deps import get_db
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.services import ride_service
+from pydantic import EmailStr
+from typing import List
 
 from app.schemas.ride import (
     RideCreate,
@@ -140,5 +142,22 @@ def create_ride_request(
     return ride_service.create_ride_request_service(
         db=db,
         request_data=request_data,
+        email=email,
+    )
+
+# Get all ride requests for a ride owned by the logged-in driver.
+# Get all ride requests for a ride owned by the logged-in driver.
+@router.get(
+    "/{ride_id}/requests",
+    response_model=List[RideRequestResponse],
+)
+def get_ride_requests(
+    ride_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.get_ride_requests_service(
+        db=db,
+        ride_id=ride_id,
         email=email,
     )
