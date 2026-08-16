@@ -1,8 +1,8 @@
-from sqlalchemy.orm import Session
-
+from sqlalchemy.orm import Session, joinedload
 from app.models.ride import Ride
 from app.models.user import User
 from app.models.vehicle import Vehicle
+from app.models.ride_request import RideRequest
 
 from app.schemas.ride import (
     RideCreate,
@@ -62,6 +62,33 @@ def get_ride_by_id(db: Session, ride_id: int, driver_id: int):
         .filter(
             Ride.ride_id == ride_id,
             Ride.driver_id == driver_id
+        )
+        .first()
+    )
+
+
+
+
+# Get complete ride details for passengers
+def get_ride_details_by_id(
+    db: Session,
+    ride_id: int,
+):
+    return (
+        db.query(Ride)
+        .options(
+            joinedload(Ride.driver),
+            joinedload(Ride.vehicle),
+            joinedload(
+                Ride.ride_requests.and_(
+                    RideRequest.status == "accepted"
+                )
+            ).joinedload(
+                RideRequest.passenger
+            ),
+        )
+        .filter(
+            Ride.ride_id == ride_id
         )
         .first()
     )

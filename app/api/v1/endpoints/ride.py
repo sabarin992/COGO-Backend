@@ -10,7 +10,10 @@ from app.schemas.ride import (
     RideResponse,
     RideUpdate,
     RideSearchRequest,
-    RideSearchResponse
+    RideSearchResponse,
+    RideDetailsResponse,
+    RideRequestCreate,
+    RideRequestResponse,
 )
 
 
@@ -52,7 +55,7 @@ def get_my_rides(
     )
 
 
-# Get one ride
+# Get one ride for rider
 @router.get("/{ride_id}",response_model=RideResponse)
 def get_ride(
     ride_id: int,
@@ -65,6 +68,19 @@ def get_ride(
         email = email,
     )
 
+# get ride for passenger
+@router.get(
+    "/{ride_id}/details",
+    response_model=RideDetailsResponse,
+)
+def get_ride_details(
+    ride_id: int,
+    db: Session = Depends(get_db),
+):
+    return ride_service.get_ride_details_service(
+        db=db,
+        ride_id=ride_id,
+    )
 
 # Edit ride
 @router.put("/{ride_id}",response_model=RideResponse)
@@ -109,4 +125,20 @@ def search_rides(
     return ride_service.search_rides_service(
         db=db,
         search_data=search_data,
+    )
+
+# ride request
+@router.post(
+    "/request",
+    response_model=RideRequestResponse,
+)
+def create_ride_request(
+    request_data: RideRequestCreate,
+    db: Session = Depends(get_db),
+    email = Depends(get_current_user),
+):
+    return ride_service.create_ride_request_service(
+        db=db,
+        request_data=request_data,
+        email=email,
     )

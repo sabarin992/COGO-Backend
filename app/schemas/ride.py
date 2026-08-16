@@ -70,3 +70,59 @@ class RideSearchResponse(BaseModel):
     vehicle_brand: str
     vehicle_model: str
     vehicle_color: str
+
+
+class RideDriverResponse(BaseModel):
+    id: int
+    full_name: str
+    profile_pic: str | None = None
+
+
+class RideVehicleResponse(BaseModel):
+    id: int
+    vehicle_type: str
+    brand: str
+    model: str
+    year: int
+    color: str
+    registration_number: str
+    seating_capacity: int
+
+
+class RidePassengerResponse(BaseModel):
+    id: int
+    full_name: str
+    profile_pic: str | None = None
+    seats_requested: int
+
+
+
+class RideDetailsResponse(BaseModel):
+    ride_id: int
+
+    source: str
+    destination: str
+    route: str | None = None
+
+    travel_date: date
+    travel_time: time
+
+    available_seats: int
+
+    driver: RideDriverResponse
+    vehicle: RideVehicleResponse
+
+    passengers: list[RidePassengerResponse] = []
+
+
+class RideRequestCreate(BaseModel):
+    ride_id: int = Field(..., gt=0)
+    seats_requested: int = Field(..., gt=0)
+
+
+class RideRequestResponse(BaseModel):
+    ride_request_id: int
+    ride_id: int
+    passenger_id: int
+    seats_requested: int
+    status: str
