@@ -176,3 +176,27 @@ def search_rides(
         )
         .all()
     )
+
+
+# Reduce available seats for a ride
+def reduce_available_seats(
+    db: Session,
+    ride_id: int,
+    seats: int,
+):
+    ride = (
+        db.query(Ride)
+        .filter(
+            Ride.ride_id == ride_id,
+            Ride.available_seats >= seats,
+        )
+        .with_for_update()
+        .first()
+    )
+
+    if not ride:
+        return None
+
+    ride.available_seats -= seats
+
+    return ride

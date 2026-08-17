@@ -41,7 +41,7 @@ def create_ride_request(
     return ride_request
 
 
-# Get all requests for a ride
+
 # Get all requests for a ride owned by the driver
 def get_ride_requests(
     db: Session,
@@ -66,3 +66,43 @@ def get_ride_requests(
         )
         .all()
     )
+
+# Get a ride request by its ID
+def get_ride_request_by_id(
+    db: Session,
+    ride_request_id: int,
+):
+    return (
+        db.query(RideRequest)
+        .filter(
+            RideRequest.ride_request_id == ride_request_id
+        )
+        .first()
+    )
+
+
+# Update the status of a ride request
+
+def update_ride_request_status(
+    db: Session,
+    ride_request_id: int,
+    status: str,
+):
+    ride_request = (
+        db.query(RideRequest)
+        .filter(
+            RideRequest.ride_request_id == ride_request_id
+        )
+        .first()
+    )
+
+    if not ride_request:
+        return None
+
+    ride_request.status = status
+
+    db.flush()
+
+    return ride_request
+
+

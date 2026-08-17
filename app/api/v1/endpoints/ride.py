@@ -156,8 +156,42 @@ def get_ride_requests(
     email: EmailStr = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    print(ride_id)
     return ride_service.get_ride_requests_service(
         db=db,
         ride_id=ride_id,
+        email=email,
+    )
+
+
+# Accept a pending ride request.
+@router.post(
+    "/requests/{ride_request_id}/accept",
+    response_model=RideRequestResponse,
+)
+def accept_ride_request(
+    ride_request_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.accept_ride_request_service(
+        db=db,
+        ride_request_id=ride_request_id,
+        email=email,
+    )
+
+# Reject a pending ride request.
+@router.post(
+    "/requests/{ride_request_id}/reject",
+    response_model=RideRequestResponse,
+)
+def reject_ride_request(
+    ride_request_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.reject_ride_request_service(
+        db=db,
+        ride_request_id=ride_request_id,
         email=email,
     )

@@ -409,6 +409,142 @@ def get_ride_requests_service(
     ]
 
 
+# Accept a ride request
+def accept_ride_request_service(
+    db: Session,
+    ride_request_id: int,
+    email: EmailStr,
+):
+    try:
+        # Get logged-in driver
+        driver = user_repo.get_user_by_email(
+            db=db,
+            email=email,
+        )
 
+        if not driver:
+            raise NotFoundException(
+                "User not found."
+            )
+
+        # Get ride request
+        ride_request = (
+            ride_request_repo.get_ride_request_by_id(
+                db=db,
+                ride_request_id=ride_request_id,
+            )
+        )
+
+        if not ride_request:
+            raise NotFoundException(
+                "Ride request not found."
+            )
+
+        # Verify that the ride belongs to the driver
+        ride = ride_repo.get_ride_by_id(
+            db=db,
+            ride_id=ride_request.ride_id,
+            driver_id=driver.id,
+        )
+
+        if not ride:
+            raise ForbiddenException(
+                "You are not allowed to manage this ride request."
+            )
+
+        # Request must still be pending
+        if ride_request.status != "pending":
+            raise BadRequestException(
+                "This ride request has already been processed."
+            )
+
+        # Lock the ride and reduce available seats
+        ride = ride_repo.reduce_available_seats(
+            db=db,
+            ride_id=ride_request.ride_id,
+            seats=ride_request.seats_requested,
+        )
+
+        if not ride:
+            raise BadRequestException(
+                "Not enough seats available."
+            )
+
+        # Accept the request
+        updated_request = (
+            ride_request_repo.update_ride_request_status(
+                db=db,
+                ride_request_id=ride_request_id,
+                status="accepted",
+            )
+        )
+
+        # Commit both changes together
+        db.commit()
+        db.refresh(updated_request)
+
+        return updated_request
+
+    except Exception:
+        db.rollback()
+        raise
+
+
+# Reject a ride request
+def reject_ride_request_service(
+    db: Session,
+    ride_request_id: int,
+    email: EmailStr,
+):
+    # Get logged-in driver
+    driver = user_repo.get_user_by_email(
+        db=db,
+        email=email,
+    )
+
+    if not driver:
+        raise NotFoundException(
+            "User not found."
+        )
+
+    # Get ride request
+    ride_request = ride_request_repo.get_ride_request_by_id(
+        db=db,
+        ride_request_id=ride_request_id,
+    )
+
+    if not ride_request:
+        raise NotFoundException(
+            "Ride request not found."
+        )
+
+    # Verify ride belongs to driver
+    ride = ride_repo.get_ride_by_id(
+        db=db,
+        ride_id=ride_request.ride_id,
+        driver_id=driver.id,
+    )
+
+    if not ride:
+        raise ForbiddenException(
+            "You are not allowed to manage this ride request."
+        )
+
+    # Request must still be pending
+    if ride_request.status != "pending":
+        raise BadRequestException(
+            "This ride request has already been processed."
+        )
+
+    # Reject request
+    updated_request = (
+        ride_request_repo.update_ride_request_status(
+            db=db,
+            ride_request_id=ride_request_id,
+            status="rejected",
+        )
+    )
+
+    return updated_request
 
 
