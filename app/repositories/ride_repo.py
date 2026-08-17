@@ -149,10 +149,10 @@ def delete_ride(
 def search_rides(
     db: Session,
     search_data: RideSearchRequest,
-    start_time,
-    end_time,
+    start_time=None,
+    end_time=None,
 ):
-    return (
+    query = (
         db.query(Ride, User, Vehicle)
         .join(
             User,
@@ -166,16 +166,18 @@ def search_rides(
             Ride.source.ilike(search_data.source),
             Ride.destination.ilike(search_data.destination),
             Ride.travel_date == search_data.travel_date,
-
-            # Time range
-            Ride.travel_time >= start_time,
-            Ride.travel_time <= end_time,
-
             Ride.available_seats >= search_data.seat_required,
             User.is_blocked.is_(False),
         )
-        .all()
     )
+
+    if start_time and end_time:
+        query = query.filter(
+            Ride.travel_time >= start_time,
+            Ride.travel_time <= end_time,
+        )
+
+    return query.all()
 
 
 # Reduce available seats for a ride

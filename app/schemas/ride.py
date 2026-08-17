@@ -48,7 +48,7 @@ class RideSearchRequest(BaseModel):
     source: str = Field(..., min_length=1)
     destination: str = Field(..., min_length=1)
     travel_date: date
-    travel_time: time
+    travel_time: time | None = None
     seat_required: int = Field(..., gt=0)
 
 

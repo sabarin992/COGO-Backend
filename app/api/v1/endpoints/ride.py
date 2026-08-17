@@ -124,6 +124,7 @@ def search_rides(
     db: Session = Depends(get_db),
     email=Depends(get_current_user),
 ):
+    print(search_data)
     return ride_service.search_rides_service(
         db=db,
         search_data=search_data,

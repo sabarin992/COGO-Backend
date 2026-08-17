@@ -232,24 +232,27 @@ def delete_ride_service(
 # Search rides
 def search_rides_service(
     db: Session,
-    search_data: RideSearchRequest
-    ):
-    
-    requested_datetime = datetime.combine(
-        search_data.travel_date,
-        search_data.travel_time,
-    )
+    search_data: RideSearchRequest,
+):
+    start_time = None
+    end_time = None
 
-    start_datetime = (
-        requested_datetime - timedelta(minutes=30)
-    )
+    if search_data.travel_time:
+        requested_datetime = datetime.combine(
+            search_data.travel_date,
+            search_data.travel_time,
+        )
 
-    end_datetime = (
-        requested_datetime + timedelta(minutes=30)
-    )
+        start_datetime = (
+            requested_datetime - timedelta(minutes=30)
+        )
 
-    start_time = start_datetime.time()
-    end_time = end_datetime.time()
+        end_datetime = (
+            requested_datetime + timedelta(minutes=30)
+        )
+
+        start_time = start_datetime.time()
+        end_time = end_datetime.time()
 
     rides = ride_repo.search_rides(
         db=db,
@@ -266,7 +269,6 @@ def search_rides_service(
     response = []
 
     for ride, driver, vehicle in rides:
-
         response.append(
             RideSearchResponse(
                 ride_id=ride.ride_id,
