@@ -124,8 +124,11 @@ class RideRequestResponse(BaseModel):
     ride_request_id: int
     ride_id: int
     passenger_id: int
-    passenger_name: str
-    passenger_profile_pic: str | None
+    passenger_name: str | None = None
+    passenger_profile_pic: str | None = None
     seats_requested: int
     status: str
     created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+

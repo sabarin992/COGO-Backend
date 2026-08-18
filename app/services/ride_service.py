@@ -356,7 +356,17 @@ def create_ride_request_service(
         seats_requested=request_data.seats_requested,
     )
 
-    return ride_request
+    return {
+        "ride_request_id": ride_request.ride_request_id,
+        "ride_id": ride_request.ride_id,
+        "passenger_id": ride_request.passenger_id,
+        "passenger_name": user.full_name,
+        "passenger_profile_pic": user.profile_pic,
+        "seats_requested": ride_request.seats_requested,
+        "status": ride_request.status,
+        "created_at": ride_request.created_at,
+    }
+
 
 
 # Get all ride requests for a ride owned by the logged-in driver.
@@ -485,7 +495,16 @@ def accept_ride_request_service(
         db.commit()
         db.refresh(updated_request)
 
-        return updated_request
+        return {
+            "ride_request_id": updated_request.ride_request_id,
+            "ride_id": updated_request.ride_id,
+            "passenger_id": updated_request.passenger_id,
+            "passenger_name": updated_request.passenger.full_name if updated_request.passenger else None,
+            "passenger_profile_pic": updated_request.passenger.profile_pic if updated_request.passenger else None,
+            "seats_requested": updated_request.seats_requested,
+            "status": updated_request.status,
+            "created_at": updated_request.created_at,
+        }
 
     except Exception:
         db.rollback()
@@ -547,6 +566,16 @@ def reject_ride_request_service(
         )
     )
 
-    return updated_request
+    return {
+        "ride_request_id": updated_request.ride_request_id,
+        "ride_id": updated_request.ride_id,
+        "passenger_id": updated_request.passenger_id,
+        "passenger_name": updated_request.passenger.full_name if updated_request.passenger else None,
+        "passenger_profile_pic": updated_request.passenger.profile_pic if updated_request.passenger else None,
+        "seats_requested": updated_request.seats_requested,
+        "status": updated_request.status,
+        "created_at": updated_request.created_at,
+    }
+
 
 
