@@ -157,7 +157,6 @@ def get_ride_requests(
     email: EmailStr = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    print(ride_id)
     return ride_service.get_ride_requests_service(
         db=db,
         ride_id=ride_id,
