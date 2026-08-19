@@ -57,6 +57,38 @@ def get_my_rides(
     )
 
 
+# Get all ride requests received for rides posted by the logged-in driver.
+@router.get(
+    "/my-requests",
+    response_model=List[RideRequestResponse],
+)
+def get_all_my_ride_requests(
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.get_all_my_ride_requests_service(
+        db=db,
+        email=email,
+    )
+
+
+# Get single ride request details by ID
+@router.get(
+    "/requests/{ride_request_id}",
+    response_model=RideRequestResponse,
+)
+def get_single_ride_request_details(
+    ride_request_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.get_single_ride_request_details_service(
+        db=db,
+        ride_request_id=ride_request_id,
+        email=email,
+    )
+
+
 # Get one ride for rider
 @router.get("/{ride_id}",response_model=RideResponse)
 def get_ride(
@@ -69,6 +101,7 @@ def get_ride(
         ride_id=ride_id,
         email = email,
     )
+
 
 # get ride for passenger
 @router.get(
@@ -147,7 +180,6 @@ def create_ride_request(
     )
 
 # Get all ride requests for a ride owned by the logged-in driver.
-# Get all ride requests for a ride owned by the logged-in driver.
 @router.get(
     "/{ride_id}/requests",
     response_model=List[RideRequestResponse],
@@ -162,6 +194,7 @@ def get_ride_requests(
         ride_id=ride_id,
         email=email,
     )
+
 
 
 # Accept a pending ride request.

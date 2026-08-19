@@ -130,5 +130,14 @@ class RideRequestResponse(BaseModel):
     status: str
     created_at: datetime
 
+    # Associated Ride Information
+    source: str | None = None
+    destination: str | None = None
+    travel_date: date | None = None
+    travel_time: time | None = None
+    available_seats: int | None = None
+    route: str | None = None
+
     model_config = ConfigDict(from_attributes=True)
+
 

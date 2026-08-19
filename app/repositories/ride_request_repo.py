@@ -51,7 +51,8 @@ def get_ride_requests(
     return (
         db.query(RideRequest)
         .options(
-            joinedload(RideRequest.passenger)
+            joinedload(RideRequest.passenger),
+            joinedload(RideRequest.ride),
         )
         .join(
             Ride,
@@ -67,18 +68,49 @@ def get_ride_requests(
         .all()
     )
 
-# Get a ride request by its ID
+
+# Get all requests across ALL rides owned by the driver
+def get_all_driver_ride_requests(
+    db: Session,
+    driver_id: int,
+):
+    return (
+        db.query(RideRequest)
+        .options(
+            joinedload(RideRequest.passenger),
+            joinedload(RideRequest.ride),
+        )
+        .join(
+            Ride,
+            Ride.ride_id == RideRequest.ride_id
+        )
+        .filter(
+            Ride.driver_id == driver_id,
+        )
+        .order_by(
+            RideRequest.created_at.desc()
+        )
+        .all()
+    )
+
+
+# Get a ride request by its ID with passenger and ride loaded
 def get_ride_request_by_id(
     db: Session,
     ride_request_id: int,
 ):
     return (
         db.query(RideRequest)
+        .options(
+            joinedload(RideRequest.passenger),
+            joinedload(RideRequest.ride),
+        )
         .filter(
             RideRequest.ride_request_id == ride_request_id
         )
         .first()
     )
+
 
 
 # Update the status of a ride request

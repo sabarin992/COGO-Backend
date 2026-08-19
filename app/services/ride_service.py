@@ -369,6 +369,35 @@ def create_ride_request_service(
 
 
 
+def format_ride_request_dict(request):
+    passenger_name = request.passenger.full_name if request.passenger else None
+    passenger_pic = request.passenger.profile_pic if request.passenger else None
+
+    ride_source = request.ride.source if request.ride else None
+    ride_dest = request.ride.destination if request.ride else None
+    ride_date = request.ride.travel_date if request.ride else None
+    ride_time = request.ride.travel_time if request.ride else None
+    ride_seats = request.ride.available_seats if request.ride else None
+    ride_route = request.ride.route if request.ride else None
+
+    return {
+        "ride_request_id": request.ride_request_id,
+        "ride_id": request.ride_id,
+        "passenger_id": request.passenger_id,
+        "passenger_name": passenger_name,
+        "passenger_profile_pic": passenger_pic,
+        "seats_requested": request.seats_requested,
+        "status": request.status,
+        "created_at": request.created_at,
+        "source": ride_source,
+        "destination": ride_dest,
+        "travel_date": ride_date,
+        "travel_time": ride_time,
+        "available_seats": ride_seats,
+        "route": ride_route,
+    }
+
+
 # Get all ride requests for a ride owned by the logged-in driver.
 def get_ride_requests_service(
     db: Session,
@@ -405,20 +434,48 @@ def get_ride_requests_service(
         driver_id=driver.id,
     )
 
-    # Convert database objects into response data
-    return [
-        {
-            "ride_request_id": request.ride_request_id,
-            "ride_id": request.ride_id,
-            "passenger_id": request.passenger_id,
-            "passenger_name": request.passenger.full_name,
-            "passenger_profile_pic": request.passenger.profile_pic,
-            "seats_requested": request.seats_requested,
-            "status": request.status,
-            "created_at": request.created_at,
-        }
-        for request in requests
-    ]
+    return [format_ride_request_dict(req) for req in requests]
+
+
+# Get all incoming requests across ALL rides posted by the logged-in driver
+def get_all_my_ride_requests_service(
+    db: Session,
+    email: EmailStr,
+):
+    driver = user_repo.get_user_by_email(db=db, email=email)
+    if not driver:
+        raise NotFoundException("User not found.")
+
+    requests = ride_request_repo.get_all_driver_ride_requests(
+        db=db,
+        driver_id=driver.id,
+    )
+
+    return [format_ride_request_dict(req) for req in requests]
+
+
+# Get details for a specific ride request by ID
+def get_single_ride_request_details_service(
+    db: Session,
+    ride_request_id: int,
+    email: EmailStr,
+):
+    driver = user_repo.get_user_by_email(db=db, email=email)
+    if not driver:
+        raise NotFoundException("User not found.")
+
+    request = ride_request_repo.get_ride_request_by_id(
+        db=db,
+        ride_request_id=ride_request_id,
+    )
+
+    if not request:
+        raise NotFoundException("Ride request not found.")
+
+    if request.ride and request.ride.driver_id != driver.id:
+        raise ForbiddenException("You are not authorized to view this request.")
+
+    return format_ride_request_dict(request)
 
 
 # Accept a ride request
@@ -495,16 +552,7 @@ def accept_ride_request_service(
         db.commit()
         db.refresh(updated_request)
 
-        return {
-            "ride_request_id": updated_request.ride_request_id,
-            "ride_id": updated_request.ride_id,
-            "passenger_id": updated_request.passenger_id,
-            "passenger_name": updated_request.passenger.full_name if updated_request.passenger else None,
-            "passenger_profile_pic": updated_request.passenger.profile_pic if updated_request.passenger else None,
-            "seats_requested": updated_request.seats_requested,
-            "status": updated_request.status,
-            "created_at": updated_request.created_at,
-        }
+        return format_ride_request_dict(updated_request)
 
     except Exception:
         db.rollback()
@@ -566,16 +614,8 @@ def reject_ride_request_service(
         )
     )
 
-    return {
-        "ride_request_id": updated_request.ride_request_id,
-        "ride_id": updated_request.ride_id,
-        "passenger_id": updated_request.passenger_id,
-        "passenger_name": updated_request.passenger.full_name if updated_request.passenger else None,
-        "passenger_profile_pic": updated_request.passenger.profile_pic if updated_request.passenger else None,
-        "seats_requested": updated_request.seats_requested,
-        "status": updated_request.status,
-        "created_at": updated_request.created_at,
-    }
+    return format_ride_request_dict(updated_request)
+
 
 
 
