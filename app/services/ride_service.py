@@ -51,6 +51,12 @@ def create_ride(
             detail="User not found"
         )
 
+    # Only users with the Rider role can post a ride
+    if user.role != "rider":
+        raise ForbiddenException(
+            "Only users with the Rider role can post a ride."
+        )
+
     # Check whether the vehicle belongs to the logged-in user
     if vehicle.user_id != user.id:
         raise ForbiddenException(
