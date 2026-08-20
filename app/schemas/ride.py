@@ -138,6 +138,10 @@ class RideRequestResponse(BaseModel):
     available_seats: int | None = None
     route: str | None = None
 
+    # Driver Information
+    driver_name: str | None = None
+    driver_profile_pic: str | None = None
+
     model_config = ConfigDict(from_attributes=True)
 
 

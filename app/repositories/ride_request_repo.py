@@ -78,7 +78,7 @@ def get_all_driver_ride_requests(
         db.query(RideRequest)
         .options(
             joinedload(RideRequest.passenger),
-            joinedload(RideRequest.ride),
+            joinedload(RideRequest.ride).joinedload(Ride.driver),
         )
         .join(
             Ride,
@@ -94,6 +94,28 @@ def get_all_driver_ride_requests(
     )
 
 
+# Get all ride requests sent by a passenger (my bookings)
+def get_passenger_ride_requests(
+    db: Session,
+    passenger_id: int,
+):
+    return (
+        db.query(RideRequest)
+        .options(
+            joinedload(RideRequest.passenger),
+            joinedload(RideRequest.ride).joinedload(Ride.driver),
+        )
+        .filter(
+            RideRequest.passenger_id == passenger_id,
+        )
+        .order_by(
+            RideRequest.created_at.desc()
+        )
+        .all()
+    )
+
+
+
 # Get a ride request by its ID with passenger and ride loaded
 def get_ride_request_by_id(
     db: Session,
@@ -103,7 +125,7 @@ def get_ride_request_by_id(
         db.query(RideRequest)
         .options(
             joinedload(RideRequest.passenger),
-            joinedload(RideRequest.ride),
+            joinedload(RideRequest.ride).joinedload(Ride.driver),
         )
         .filter(
             RideRequest.ride_request_id == ride_request_id

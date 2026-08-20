@@ -386,6 +386,9 @@ def format_ride_request_dict(request):
     ride_seats = request.ride.available_seats if request.ride else None
     ride_route = request.ride.route if request.ride else None
 
+    driver_name = request.ride.driver.full_name if (request.ride and request.ride.driver) else None
+    driver_pic = request.ride.driver.profile_pic if (request.ride and request.ride.driver) else None
+
     return {
         "ride_request_id": request.ride_request_id,
         "ride_id": request.ride_id,
@@ -401,6 +404,8 @@ def format_ride_request_dict(request):
         "travel_time": ride_time,
         "available_seats": ride_seats,
         "route": ride_route,
+        "driver_name": driver_name,
+        "driver_profile_pic": driver_pic,
     }
 
 
@@ -460,6 +465,64 @@ def get_all_my_ride_requests_service(
     return [format_ride_request_dict(req) for req in requests]
 
 
+# Get all ride requests sent by the logged-in user as a passenger (My Bookings)
+def get_all_my_bookings_service(
+    db: Session,
+    email: EmailStr,
+):
+    passenger = user_repo.get_user_by_email(db=db, email=email)
+    if not passenger:
+        raise NotFoundException("User not found.")
+
+    requests = ride_request_repo.get_passenger_ride_requests(
+        db=db,
+        passenger_id=passenger.id,
+    )
+
+    return [format_ride_request_dict(req) for req in requests]
+
+
+# Cancel a ride request created by the logged-in passenger
+def cancel_ride_request_service(
+    db: Session,
+    ride_request_id: int,
+    email: EmailStr,
+):
+    passenger = user_repo.get_user_by_email(db=db, email=email)
+    if not passenger:
+        raise NotFoundException("User not found.")
+
+    request = ride_request_repo.get_ride_request_by_id(
+        db=db,
+        ride_request_id=ride_request_id,
+    )
+
+    if not request:
+        raise NotFoundException("Ride request not found.")
+
+    if request.passenger_id != passenger.id:
+        raise ForbiddenException("You are not allowed to cancel this request.")
+
+    if request.status in ["rejected", "cancelled"]:
+        raise BadRequestException(f"This ride request is already {request.status}.")
+
+    # If status was accepted, restore seats to the ride
+    if request.status == "accepted" and request.ride:
+        request.ride.available_seats += request.seats_requested
+
+    updated_request = ride_request_repo.update_ride_request_status(
+        db=db,
+        ride_request_id=ride_request_id,
+        status="cancelled",
+    )
+
+    db.commit()
+    db.refresh(updated_request)
+
+    return format_ride_request_dict(updated_request)
+
+
+
 # Get details for a specific ride request by ID
 def get_single_ride_request_details_service(
     db: Session,
@@ -478,7 +541,7 @@ def get_single_ride_request_details_service(
     if not request:
         raise NotFoundException("Ride request not found.")
 
-    if request.ride and request.ride.driver_id != driver.id:
+    if request.ride and (request.ride.driver_id != driver.id and request.passenger_id != driver.id):
         raise ForbiddenException("You are not authorized to view this request.")
 
     return format_ride_request_dict(request)

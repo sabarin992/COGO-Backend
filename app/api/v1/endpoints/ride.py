@@ -72,6 +72,22 @@ def get_all_my_ride_requests(
     )
 
 
+# Get all ride requests sent by the logged-in user as a passenger (My Bookings)
+@router.get(
+    "/my-bookings",
+    response_model=List[RideRequestResponse],
+)
+def get_all_my_bookings(
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.get_all_my_bookings_service(
+        db=db,
+        email=email,
+    )
+
+
+
 # Get single ride request details by ID
 @router.get(
     "/requests/{ride_request_id}",
@@ -224,6 +240,22 @@ def reject_ride_request(
     db: Session = Depends(get_db),
 ):
     return ride_service.reject_ride_request_service(
+        db=db,
+        ride_request_id=ride_request_id,
+        email=email,
+    )
+
+# Cancel a ride request (passenger booking)
+@router.post(
+    "/requests/{ride_request_id}/cancel",
+    response_model=RideRequestResponse,
+)
+def cancel_ride_request(
+    ride_request_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.cancel_ride_request_service(
         db=db,
         ride_request_id=ride_request_id,
         email=email,
