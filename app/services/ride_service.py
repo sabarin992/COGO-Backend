@@ -340,19 +340,19 @@ def create_ride_request_service(
             "Requested seats exceed available seats."
         )
 
-    # Check whether passenger already requested this ride
-    existing_request = (
-        ride_request_repo.get_request_by_ride_and_passenger(
-            db=db,
-            ride_id=request_data.ride_id,
-            passenger_id=passenger_id,
-        )
-    )
+    # # Check whether passenger already requested this ride
+    # existing_request = (
+    #     ride_request_repo.get_request_by_ride_and_passenger(
+    #         db=db,
+    #         ride_id=request_data.ride_id,
+    #         passenger_id=passenger_id,
+    #     )
+    # )
 
-    if existing_request:
-        raise BadRequestException(
-            "You have already requested this ride."
-        )
+    # if existing_request:
+    #     raise BadRequestException(
+    #         "You have already requested this ride."
+    #     )
 
     # Create request
     ride_request = ride_request_repo.create_ride_request(
@@ -682,6 +682,9 @@ def reject_ride_request_service(
             status="rejected",
         )
     )
+
+    db.commit()
+    db.refresh(updated_request)
 
     return format_ride_request_dict(updated_request)
 

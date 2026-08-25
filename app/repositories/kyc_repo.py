@@ -11,10 +11,24 @@ def create_kyc(db, data, user):
     ).first()
 
     if existing_kyc:
-        raise HTTPException(
-            status_code=400,
-            detail="KYC already exists."
-        )
+        if existing_kyc.status == KYCStatus.REJECTED:
+            existing_kyc.document_type = data["document_type"]
+            existing_kyc.document_number = data["document_number"]
+            existing_kyc.front_document_url = data["front_document_url"]
+            existing_kyc.front_document_public_id = data["front_document_public_id"]
+            existing_kyc.back_document_url = data.get("back_document_url")
+            existing_kyc.back_document_public_id = data.get("back_document_public_id")
+            existing_kyc.status = KYCStatus.PENDING
+            existing_kyc.is_verified = False
+            existing_kyc.rejection_reason = None
+            db.commit()
+            db.refresh(existing_kyc)
+            return existing_kyc
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="KYC already exists."
+            )
 
     try:
         kyc = KYC(
