@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session, joinedload
-from app.models.ride import Ride
+from app.models.ride import Ride, RideStatus
 from app.models.user import User
 from app.models.vehicle import Vehicle
 from app.models.ride_request import RideRequest
@@ -81,7 +81,7 @@ def get_ride_details_by_id(
             joinedload(Ride.vehicle),
             joinedload(
                 Ride.ride_requests.and_(
-                    RideRequest.status == "accepted"
+                    RideRequest.status.in_(["accepted", "picked_up"])
                 )
             ).joinedload(
                 RideRequest.passenger
@@ -167,9 +167,11 @@ def search_rides(
             Ride.destination.ilike(search_data.destination),
             Ride.travel_date == search_data.travel_date,
             Ride.available_seats >= search_data.seat_required,
+            Ride.status.in_([RideStatus.CREATED, RideStatus.UPCOMING]),
             User.is_blocked.is_(False),
         )
     )
+
 
     if start_time and end_time:
         query = query.filter(
