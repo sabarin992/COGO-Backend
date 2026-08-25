@@ -1,7 +1,14 @@
-from sqlalchemy.orm import Session
-
+from sqlalchemy.orm import Session, joinedload
 from app.models.ride import Ride
-from app.schemas.ride import RideCreate
+from app.models.user import User
+from app.models.vehicle import Vehicle
+from app.models.ride_request import RideRequest
+
+from app.schemas.ride import (
+    RideCreate,
+    RideSearchRequest,
+
+)
 
 
 # create ride
@@ -60,6 +67,33 @@ def get_ride_by_id(db: Session, ride_id: int, driver_id: int):
     )
 
 
+
+
+# Get complete ride details for passengers
+def get_ride_details_by_id(
+    db: Session,
+    ride_id: int,
+):
+    return (
+        db.query(Ride)
+        .options(
+            joinedload(Ride.driver),
+            joinedload(Ride.vehicle),
+            joinedload(
+                Ride.ride_requests.and_(
+                    RideRequest.status == "accepted"
+                )
+            ).joinedload(
+                RideRequest.passenger
+            ),
+        )
+        .filter(
+            Ride.ride_id == ride_id
+        )
+        .first()
+    )
+
+
 # update ride using ride_id and driver_id
 def update_ride(
     db: Session,
@@ -110,3 +144,61 @@ def delete_ride(
 
     return ride
 
+
+# Search rides
+def search_rides(
+    db: Session,
+    search_data: RideSearchRequest,
+    start_time=None,
+    end_time=None,
+):
+    query = (
+        db.query(Ride, User, Vehicle)
+        .join(
+            User,
+            Ride.driver_id == User.id
+        )
+        .join(
+            Vehicle,
+            Ride.vehicle_id == Vehicle.id
+        )
+        .filter(
+            Ride.source.ilike(search_data.source),
+            Ride.destination.ilike(search_data.destination),
+            Ride.travel_date == search_data.travel_date,
+            Ride.available_seats >= search_data.seat_required,
+            User.is_blocked.is_(False),
+        )
+    )
+
+    if start_time and end_time:
+        query = query.filter(
+            Ride.travel_time >= start_time,
+            Ride.travel_time <= end_time,
+        )
+
+    return query.all()
+
+
+# Reduce available seats for a ride
+def reduce_available_seats(
+    db: Session,
+    ride_id: int,
+    seats: int,
+):
+    ride = (
+        db.query(Ride)
+        .filter(
+            Ride.ride_id == ride_id,
+            Ride.available_seats >= seats,
+        )
+        .with_for_update()
+        .first()
+    )
+
+    if not ride:
+        return None
+
+    ride.available_seats -= seats
+
+    return ride

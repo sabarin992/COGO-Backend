@@ -21,10 +21,10 @@ class Ride(Base):
     ride_id = Column(Integer, primary_key=True, index=True)
 
     driver_id = Column(
-    Integer,
-    ForeignKey("users.id"),
-    nullable=False
-)
+            Integer,
+            ForeignKey("users.id"),
+            nullable=False
+        )
 
     vehicle_id = Column(
             Integer,
@@ -59,3 +59,8 @@ class Ride(Base):
 
     driver = relationship("User", back_populates="rides")
     vehicle = relationship("Vehicle", back_populates="rides")
+    ride_requests = relationship(
+    "RideRequest",
+    back_populates="ride",
+    cascade="all, delete-orphan"
+)

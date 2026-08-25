@@ -4,11 +4,18 @@ from app.db.deps import get_db
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.services import ride_service
+from pydantic import EmailStr
+from typing import List
 
 from app.schemas.ride import (
     RideCreate,
     RideResponse,
-    RideUpdate
+    RideUpdate,
+    RideSearchRequest,
+    RideSearchResponse,
+    RideDetailsResponse,
+    RideRequestCreate,
+    RideRequestResponse,
 )
 
 
@@ -50,7 +57,55 @@ def get_my_rides(
     )
 
 
-# Get one ride
+# Get all ride requests received for rides posted by the logged-in driver.
+@router.get(
+    "/my-requests",
+    response_model=List[RideRequestResponse],
+)
+def get_all_my_ride_requests(
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.get_all_my_ride_requests_service(
+        db=db,
+        email=email,
+    )
+
+
+# Get all ride requests sent by the logged-in user as a passenger (My Bookings)
+@router.get(
+    "/my-bookings",
+    response_model=List[RideRequestResponse],
+)
+def get_all_my_bookings(
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.get_all_my_bookings_service(
+        db=db,
+        email=email,
+    )
+
+
+
+# Get single ride request details by ID
+@router.get(
+    "/requests/{ride_request_id}",
+    response_model=RideRequestResponse,
+)
+def get_single_ride_request_details(
+    ride_request_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.get_single_ride_request_details_service(
+        db=db,
+        ride_request_id=ride_request_id,
+        email=email,
+    )
+
+
+# Get one ride for rider
 @router.get("/{ride_id}",response_model=RideResponse)
 def get_ride(
     ride_id: int,
@@ -63,6 +118,20 @@ def get_ride(
         email = email,
     )
 
+
+# get ride for passenger
+@router.get(
+    "/{ride_id}/details",
+    response_model=RideDetailsResponse,
+)
+def get_ride_details(
+    ride_id: int,
+    db: Session = Depends(get_db),
+):
+    return ride_service.get_ride_details_service(
+        db=db,
+        ride_id=ride_id,
+    )
 
 # Edit ride
 @router.put("/{ride_id}",response_model=RideResponse)
@@ -91,5 +160,103 @@ def delete_ride(
     return ride_service.delete_ride_service(
         db=db,
         ride_id=ride_id,
+        email=email,
+    )
+
+
+@router.post(
+    "/search",
+    response_model=list[RideSearchResponse]
+)
+def search_rides(
+    search_data: RideSearchRequest,
+    db: Session = Depends(get_db),
+    email=Depends(get_current_user),
+):
+    print(search_data)
+    return ride_service.search_rides_service(
+        db=db,
+        search_data=search_data,
+    )
+
+# ride request
+@router.post(
+    "/request",
+    response_model=RideRequestResponse,
+)
+def create_ride_request(
+    request_data: RideRequestCreate,
+    db: Session = Depends(get_db),
+    email = Depends(get_current_user),
+):
+    return ride_service.create_ride_request_service(
+        db=db,
+        request_data=request_data,
+        email=email,
+    )
+
+# Get all ride requests for a ride owned by the logged-in driver.
+@router.get(
+    "/{ride_id}/requests",
+    response_model=List[RideRequestResponse],
+)
+def get_ride_requests(
+    ride_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.get_ride_requests_service(
+        db=db,
+        ride_id=ride_id,
+        email=email,
+    )
+
+
+
+# Accept a pending ride request.
+@router.post(
+    "/requests/{ride_request_id}/accept",
+    response_model=RideRequestResponse,
+)
+def accept_ride_request(
+    ride_request_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.accept_ride_request_service(
+        db=db,
+        ride_request_id=ride_request_id,
+        email=email,
+    )
+
+# Reject a pending ride request.
+@router.post(
+    "/requests/{ride_request_id}/reject",
+    response_model=RideRequestResponse,
+)
+def reject_ride_request(
+    ride_request_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.reject_ride_request_service(
+        db=db,
+        ride_request_id=ride_request_id,
+        email=email,
+    )
+
+# Cancel a ride request (passenger booking)
+@router.post(
+    "/requests/{ride_request_id}/cancel",
+    response_model=RideRequestResponse,
+)
+def cancel_ride_request(
+    ride_request_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.cancel_ride_request_service(
+        db=db,
+        ride_request_id=ride_request_id,
         email=email,
     )
