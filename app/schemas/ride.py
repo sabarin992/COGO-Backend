@@ -2,6 +2,8 @@ from datetime import datetime, date, time
 
 from pydantic import BaseModel, Field, ConfigDict
 
+from app.models.ride import RideStatus
+
 
 class RideCreate(BaseModel):
     vehicle_id: int
@@ -24,6 +26,7 @@ class RideResponse(BaseModel):
     travel_date: date
     travel_time: time
     available_seats: int
+    status: RideStatus
     vehicle_id: int
     driver_id: int
     created_at: datetime
@@ -60,6 +63,7 @@ class RideSearchResponse(BaseModel):
     travel_date: date
     travel_time: time
     available_seats: int
+    status: RideStatus
 
     driver_id: int
     driver_name: str
@@ -108,6 +112,7 @@ class RideDetailsResponse(BaseModel):
     travel_time: time
 
     available_seats: int
+    status: RideStatus
 
     driver: RideDriverResponse
     vehicle: RideVehicleResponse
@@ -137,11 +142,13 @@ class RideRequestResponse(BaseModel):
     travel_time: time | None = None
     available_seats: int | None = None
     route: str | None = None
+    ride_status: str | None = None
 
     # Driver Information
     driver_name: str | None = None
     driver_profile_pic: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
 
 

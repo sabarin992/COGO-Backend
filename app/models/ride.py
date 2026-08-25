@@ -1,4 +1,5 @@
-from datetime import datetime,timezone
+import enum
+from datetime import datetime, timezone
 
 from sqlalchemy import (
     Column,
@@ -14,6 +15,17 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
+
+
+class RideStatus(str, enum.Enum):
+    CREATED = "CREATED"
+    UPCOMING = "UPCOMING"
+    STARTED = "STARTED"
+    REACHED_PICKUP = "REACHED_PICKUP"
+    ONGOING = "ONGOING"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
+
 
 class Ride(Base):
     __tablename__ = "rides"
@@ -43,6 +55,12 @@ class Ride(Base):
     travel_time = Column(Time, nullable=False)
 
     available_seats = Column(Integer, nullable=False)
+
+    status = Column(
+        String(30),
+        default=RideStatus.CREATED.value,
+        nullable=False
+    )
 
     created_at = Column(
         DateTime(timezone=True),

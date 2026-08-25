@@ -160,6 +160,7 @@ def get_ride_details_service(
         travel_time=ride.travel_time,
 
         available_seats=ride.available_seats,
+        status=ride.status,
 
         driver={
             "id": ride.driver.id,
@@ -286,6 +287,7 @@ def search_rides_service(
                 travel_time=ride.travel_time,
 
                 available_seats=ride.available_seats,
+                status=ride.status,
 
                 driver_id=driver.id,
                 driver_name=driver.full_name,
@@ -385,6 +387,7 @@ def format_ride_request_dict(request):
     ride_time = request.ride.travel_time if request.ride else None
     ride_seats = request.ride.available_seats if request.ride else None
     ride_route = request.ride.route if request.ride else None
+    ride_status = request.ride.status if request.ride else None
 
     driver_name = request.ride.driver.full_name if (request.ride and request.ride.driver) else None
     driver_pic = request.ride.driver.profile_pic if (request.ride and request.ride.driver) else None
@@ -404,6 +407,7 @@ def format_ride_request_dict(request):
         "travel_time": ride_time,
         "available_seats": ride_seats,
         "route": ride_route,
+        "ride_status": ride_status,
         "driver_name": driver_name,
         "driver_profile_pic": driver_pic,
     }
