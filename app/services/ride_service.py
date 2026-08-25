@@ -797,6 +797,80 @@ def reached_pickup_service(
         raise
 
 
+# Passenger pickup service (RideRequest: accepted -> picked_up, Ride: REACHED_PICKUP -> ONGOING)
+def pickup_passenger_service(
+    db: Session,
+    ride_id: int,
+    ride_request_id: int,
+    email: EmailStr,
+):
+    try:
+        # Get logged-in user (driver)
+        driver = user_repo.get_user_by_email(db=db, email=email)
+        if not driver:
+            raise NotFoundException("User not found.")
+
+        # Validate Ride exists
+        ride = ride_repo.get_ride_by_id_only(db=db, ride_id=ride_id)
+        if not ride:
+            raise NotFoundException("Ride not found.")
+
+        # Validate RideRequest exists
+        ride_request = ride_request_repo.get_ride_request_by_id(
+            db=db,
+            ride_request_id=ride_request_id,
+        )
+        if not ride_request:
+            raise NotFoundException("Ride request not found.")
+
+        # Validate RideRequest belongs to the specified ride_id
+        if ride_request.ride_id != ride_id:
+            raise BadRequestException("This ride request does not belong to the specified ride.")
+
+        # Verify current logged-in user is the driver/owner of the ride
+        if ride.driver_id != driver.id:
+            raise ForbiddenException("You are not allowed to manage this ride.")
+
+        # Validate Ride status: Must be REACHED_PICKUP or ONGOING
+        allowed_ride_statuses = [RideStatus.REACHED_PICKUP, RideStatus.ONGOING]
+        if ride.status not in allowed_ride_statuses:
+            raise BadRequestException(
+                f"Cannot pick up passenger when ride status is '{ride.status}'. Only rides in REACHED_PICKUP or ONGOING status can perform passenger pickup."
+            )
+
+        # Validate RideRequest status: Must be accepted
+        if ride_request.status != "accepted":
+            raise BadRequestException(
+                f"Cannot pick up passenger when request status is '{ride_request.status}'. Only accepted requests can be picked up."
+            )
+
+        # Update RideRequest status: accepted -> picked_up
+        updated_request = ride_request_repo.update_ride_request_status(
+            db=db,
+            ride_request_id=ride_request_id,
+            status="picked_up",
+        )
+
+        # Update Ride status: REACHED_PICKUP -> ONGOING if needed
+        if ride.status == RideStatus.REACHED_PICKUP:
+            ride_repo.update_ride_status(
+                db=db,
+                ride_id=ride_id,
+                status=RideStatus.ONGOING.value,
+            )
+
+        # Commit both updates together in the same transaction
+        db.commit()
+        db.refresh(updated_request)
+
+        return format_ride_request_dict(updated_request)
+
+    except Exception:
+        db.rollback()
+        raise
+
+
+
 
 
 

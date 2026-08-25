@@ -294,3 +294,22 @@ def reached_pickup(
         ride_id=ride_id,
         email=email,
     )
+
+
+# Pick up a specific passenger (RideRequest: accepted -> picked_up, Ride: REACHED_PICKUP -> ONGOING)
+@router.post(
+    "/{ride_id}/requests/{ride_request_id}/pickup",
+    response_model=RideRequestResponse,
+)
+def pickup_passenger(
+    ride_id: int,
+    ride_request_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.pickup_passenger_service(
+        db=db,
+        ride_id=ride_id,
+        ride_request_id=ride_request_id,
+        email=email,
+    )
