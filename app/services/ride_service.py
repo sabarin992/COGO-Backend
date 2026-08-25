@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.models.user import User
+from app.models.ride import RideStatus
 from datetime import datetime, timedelta
 from app.schemas.ride import RideDetailsResponse
 
@@ -594,6 +595,13 @@ def accept_ride_request_service(
                 "You are not allowed to manage this ride request."
             )
 
+        # Check allowed ride status for accepting requests
+        allowed_statuses = [RideStatus.CREATED, RideStatus.UPCOMING]
+        if ride.status not in allowed_statuses:
+            raise BadRequestException(
+                f"Cannot accept ride requests when ride status is '{ride.status}'."
+            )
+
         # Request must still be pending
         if ride_request.status != "pending":
             raise BadRequestException(
@@ -612,6 +620,14 @@ def accept_ride_request_service(
                 "Not enough seats available."
             )
 
+        # Transition Ride status CREATED -> UPCOMING if needed
+        if ride.status == RideStatus.CREATED:
+            ride = ride_repo.update_ride_status(
+                db=db,
+                ride_id=ride.ride_id,
+                status=RideStatus.UPCOMING.value,
+            )
+
         # Accept the request
         updated_request = (
             ride_request_repo.update_ride_request_status(
@@ -621,7 +637,7 @@ def accept_ride_request_service(
             )
         )
 
-        # Commit both changes together
+        # Commit all changes together
         db.commit()
         db.refresh(updated_request)
 
@@ -691,6 +707,51 @@ def reject_ride_request_service(
     db.refresh(updated_request)
 
     return format_ride_request_dict(updated_request)
+
+
+# Start a ride (UPCOMING -> STARTED)
+def start_ride_service(
+    db: Session,
+    ride_id: int,
+    email: EmailStr,
+):
+    try:
+        # Get logged-in user
+        user = user_repo.get_user_by_email(db=db, email=email)
+        if not user:
+            raise NotFoundException("User not found.")
+
+        # Get ride by ID
+        ride = ride_repo.get_ride_by_id_only(db=db, ride_id=ride_id)
+        if not ride:
+            raise NotFoundException("Ride not found.")
+
+        # Verify current logged-in user is the driver/owner of the ride
+        if ride.driver_id != user.id:
+            raise ForbiddenException("You are not allowed to start this ride.")
+
+        # Only allow transition from UPCOMING -> STARTED
+        if ride.status != RideStatus.UPCOMING:
+            raise BadRequestException(
+                f"Cannot start a ride with status '{ride.status}'. Only rides in UPCOMING status can be started."
+            )
+
+        # Update ride status to STARTED
+        updated_ride = ride_repo.update_ride_status(
+            db=db,
+            ride_id=ride_id,
+            status=RideStatus.STARTED.value,
+        )
+
+        db.commit()
+        db.refresh(updated_ride)
+
+        return updated_ride
+
+    except Exception:
+        db.rollback()
+        raise
+
 
 
 

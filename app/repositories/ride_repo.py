@@ -202,3 +202,43 @@ def reduce_available_seats(
     ride.available_seats -= seats
 
     return ride
+
+
+# Update status of a ride
+def update_ride_status(
+    db: Session,
+    ride_id: int,
+    status: str,
+):
+    ride = (
+        db.query(Ride)
+        .filter(
+            Ride.ride_id == ride_id
+        )
+        .first()
+    )
+
+    if not ride:
+        return None
+
+    ride.status = status
+
+    db.flush()
+
+    return ride
+
+
+# Get a ride by ID without driver filter
+def get_ride_by_id_only(
+    db: Session,
+    ride_id: int,
+):
+    return (
+        db.query(Ride)
+        .filter(
+            Ride.ride_id == ride_id
+        )
+        .first()
+    )
+
+

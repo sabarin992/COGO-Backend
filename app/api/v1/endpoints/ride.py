@@ -260,3 +260,20 @@ def cancel_ride_request(
         ride_request_id=ride_request_id,
         email=email,
     )
+
+
+# Start a ride (UPCOMING -> STARTED)
+@router.post(
+    "/{ride_id}/start",
+    response_model=RideResponse,
+)
+def start_ride(
+    ride_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.start_ride_service(
+        db=db,
+        ride_id=ride_id,
+        email=email,
+    )
