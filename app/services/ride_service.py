@@ -753,6 +753,51 @@ def start_ride_service(
         raise
 
 
+# Mark ride as reached pickup point (STARTED -> REACHED_PICKUP)
+def reached_pickup_service(
+    db: Session,
+    ride_id: int,
+    email: EmailStr,
+):
+    try:
+        # Get logged-in user
+        user = user_repo.get_user_by_email(db=db, email=email)
+        if not user:
+            raise NotFoundException("User not found.")
+
+        # Get ride by ID
+        ride = ride_repo.get_ride_by_id_only(db=db, ride_id=ride_id)
+        if not ride:
+            raise NotFoundException("Ride not found.")
+
+        # Verify current logged-in user is the driver/owner of the ride
+        if ride.driver_id != user.id:
+            raise ForbiddenException("You are not allowed to manage this ride.")
+
+        # Only allow transition from STARTED -> REACHED_PICKUP
+        if ride.status != RideStatus.STARTED:
+            raise BadRequestException(
+                f"Cannot mark pickup reached for a ride with status '{ride.status}'. Only rides in STARTED status can transition to REACHED_PICKUP."
+            )
+
+        # Update ride status to REACHED_PICKUP
+        updated_ride = ride_repo.update_ride_status(
+            db=db,
+            ride_id=ride_id,
+            status=RideStatus.REACHED_PICKUP.value,
+        )
+
+        db.commit()
+        db.refresh(updated_ride)
+
+        return updated_ride
+
+    except Exception:
+        db.rollback()
+        raise
+
+
+
 
 
 

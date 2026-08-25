@@ -277,3 +277,20 @@ def start_ride(
         ride_id=ride_id,
         email=email,
     )
+
+
+# Mark ride as reached pickup point (STARTED -> REACHED_PICKUP)
+@router.post(
+    "/{ride_id}/reached-pickup",
+    response_model=RideResponse,
+)
+def reached_pickup(
+    ride_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.reached_pickup_service(
+        db=db,
+        ride_id=ride_id,
+        email=email,
+    )
