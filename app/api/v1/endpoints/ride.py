@@ -313,3 +313,20 @@ def pickup_passenger(
         ride_request_id=ride_request_id,
         email=email,
     )
+
+
+# Complete a ride (ONGOING -> COMPLETED)
+@router.post(
+    "/{ride_id}/complete",
+    response_model=RideResponse,
+)
+def complete_ride(
+    ride_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ride_service.complete_ride_service(
+        db=db,
+        ride_id=ride_id,
+        email=email,
+    )

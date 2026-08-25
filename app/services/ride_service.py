@@ -870,6 +870,51 @@ def pickup_passenger_service(
         raise
 
 
+# Complete a ride (ONGOING -> COMPLETED)
+def complete_ride_service(
+    db: Session,
+    ride_id: int,
+    email: EmailStr,
+):
+    try:
+        # Get logged-in user (driver)
+        driver = user_repo.get_user_by_email(db=db, email=email)
+        if not driver:
+            raise NotFoundException("User not found.")
+
+        # Get ride by ID
+        ride = ride_repo.get_ride_by_id_only(db=db, ride_id=ride_id)
+        if not ride:
+            raise NotFoundException("Ride not found.")
+
+        # Verify current logged-in user is the driver/owner of the ride
+        if ride.driver_id != driver.id:
+            raise ForbiddenException("You are not allowed to manage this ride.")
+
+        # Only allow transition from ONGOING -> COMPLETED
+        if ride.status != RideStatus.ONGOING:
+            raise BadRequestException(
+                f"Cannot complete ride with status '{ride.status}'. Only rides in ONGOING status can be completed."
+            )
+
+        # Update ride status to COMPLETED
+        updated_ride = ride_repo.update_ride_status(
+            db=db,
+            ride_id=ride_id,
+            status=RideStatus.COMPLETED.value,
+        )
+
+        db.commit()
+        db.refresh(updated_ride)
+
+        return updated_ride
+
+    except Exception:
+        db.rollback()
+        raise
+
+
+
 
 
 
