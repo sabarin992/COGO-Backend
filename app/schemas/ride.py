@@ -95,9 +95,12 @@ class RideVehicleResponse(BaseModel):
 
 class RidePassengerResponse(BaseModel):
     id: int
+    ride_request_id: int
     full_name: str
     profile_pic: str | None = None
     seats_requested: int
+    status: str
+
 
 
 

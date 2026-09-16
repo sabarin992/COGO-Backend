@@ -144,9 +144,11 @@ def get_ride_details_service(
         passengers.append(
             {
                 "id": request.passenger.id,
+                "ride_request_id": request.ride_request_id,
                 "full_name": request.passenger.full_name,
                 "profile_pic": request.passenger.profile_pic,
                 "seats_requested": request.seats_requested,
+                "status": request.status,
             }
         )
 
