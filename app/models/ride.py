@@ -1,5 +1,6 @@
 import enum
 from datetime import datetime, timezone
+from sqlalchemy import JSON
 
 from sqlalchemy import (
     Column,
@@ -49,6 +50,8 @@ class Ride(Base):
     destination = Column(String(150), nullable=False)
 
     route = Column(Text)
+
+    route_geometry = Column(JSON, nullable=True)
 
     travel_date = Column(Date, nullable=False)
 

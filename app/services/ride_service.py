@@ -4,6 +4,7 @@ from app.models.user import User
 from app.models.ride import RideStatus
 from datetime import datetime, timedelta
 from app.schemas.ride import RideDetailsResponse
+from app.utils.route_utils import is_intermediate_route
 
 
 from app.repositories import (
@@ -247,6 +248,9 @@ def search_rides_service(
     start_time = None
     end_time = None
 
+    # -----------------------------------------
+    # Calculate ±30 minute time range
+    # -----------------------------------------
     if search_data.travel_time:
         requested_datetime = datetime.combine(
             search_data.travel_date,
@@ -264,6 +268,9 @@ def search_rides_service(
         start_time = start_datetime.time()
         end_time = end_datetime.time()
 
+    # -----------------------------------------
+    # Get candidate rides from repository
+    # -----------------------------------------
     rides = ride_repo.search_rides(
         db=db,
         search_data=search_data,
@@ -276,9 +283,72 @@ def search_rides_service(
             "No rides found matching your search."
         )
 
-    response = []
+    # -----------------------------------------
+    # Intermediate route filtering
+    # -----------------------------------------
+    matched_rides = []
 
     for ride, driver, vehicle in rides:
+
+        # Make sure route geometry exists
+        if not ride.route_geometry:
+            continue
+
+        result = is_intermediate_route(
+            passenger_source=search_data.source_coords,
+            passenger_destination=search_data.destination_coords,
+            route_coordinates=ride.route_geometry,
+        )
+
+        print("\n================================")
+        print("Checking ride:", ride.ride_id)
+        print("Rider source:", ride.source)
+        print("Rider destination:", ride.destination)
+
+        print(
+            "Passenger source near route:",
+            result["source_near_route"]
+        )
+
+        print(
+            "Passenger destination near route:",
+            result["destination_near_route"]
+        )
+
+        print(
+            "Correct order:",
+            result["correct_order"]
+        )
+
+        print(
+            "Intermediate route:",
+            result["is_match"]
+        )
+
+        print("================================\n")
+
+        # Only keep rides where passenger journey
+        # is an intermediate part of rider's route
+        if result["is_match"]:
+            matched_rides.append(
+                (ride, driver, vehicle)
+            )
+
+    # -----------------------------------------
+    # No intermediate rides found
+    # -----------------------------------------
+    if not matched_rides:
+        raise NotFoundException(
+            "No rides found matching your route."
+        )
+
+    # -----------------------------------------
+    # Create response
+    # -----------------------------------------
+    response = []
+
+    for ride, driver, vehicle in matched_rides:
+
         response.append(
             RideSearchResponse(
                 ride_id=ride.ride_id,

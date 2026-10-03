@@ -3,6 +3,7 @@ from app.models.ride import Ride, RideStatus
 from app.models.user import User
 from app.models.vehicle import Vehicle
 from app.models.ride_request import RideRequest
+from app.utils.route_utils import is_intermediate_route
 
 from app.schemas.ride import (
     RideCreate,
@@ -18,15 +19,26 @@ def create_ride(
     driver_id: int,
 ):
     ride = Ride(
-        driver_id=driver_id,
-        vehicle_id=ride_data.vehicle_id,
-        source=ride_data.source,
-        destination=ride_data.destination,
-        route=ride_data.route,
-        travel_date=ride_data.travel_date,
-        travel_time=ride_data.travel_time,
-        available_seats=ride_data.available_seats,
-    )
+    driver_id=driver_id,
+    vehicle_id=ride_data.vehicle_id,
+    source=ride_data.source,
+    destination=ride_data.destination,
+    route=ride_data.route,
+    route_geometry=ride_data.route_geometry,
+    travel_date=ride_data.travel_date,
+    travel_time=ride_data.travel_time,
+    available_seats=ride_data.available_seats,
+)
+    # ride = Ride(
+    #     driver_id=driver_id,
+    #     vehicle_id=ride_data.vehicle_id,
+    #     source=ride_data.source,
+    #     destination=ride_data.destination,
+    #     route=ride_data.route,
+    #     travel_date=ride_data.travel_date,
+    #     travel_time=ride_data.travel_time,
+    #     available_seats=ride_data.available_seats,
+    # )
 
     db.add(ride)
     db.commit()
@@ -144,7 +156,6 @@ def delete_ride(
 
     return ride
 
-
 # Search rides
 def search_rides(
     db: Session,
@@ -163,23 +174,26 @@ def search_rides(
             Ride.vehicle_id == Vehicle.id
         )
         .filter(
-            Ride.source.ilike(search_data.source),
-            Ride.destination.ilike(search_data.destination),
             Ride.travel_date == search_data.travel_date,
             Ride.available_seats >= search_data.seat_required,
-            Ride.status.in_([RideStatus.CREATED, RideStatus.UPCOMING]),
+            Ride.status.in_([
+                RideStatus.CREATED,
+                RideStatus.UPCOMING
+            ]),
             User.is_blocked.is_(False),
         )
     )
 
-
+    # Time filter
     if start_time and end_time:
         query = query.filter(
             Ride.travel_time >= start_time,
             Ride.travel_time <= end_time,
         )
 
-    return query.all()
+    rides = query.all()
+
+    return rides
 
 
 # Reduce available seats for a ride
