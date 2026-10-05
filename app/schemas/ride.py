@@ -11,6 +11,7 @@ class RideCreate(BaseModel):
     source: str
     destination: str
     route: str | None = None
+    route_geometry: list[list[float]] | None = None
 
     travel_date: date
     travel_time: time
@@ -46,10 +47,13 @@ class RideUpdate(BaseModel):
     available_seats: int | None = None
     vehicle_id: int | None = None
 
-
 class RideSearchRequest(BaseModel):
     source: str = Field(..., min_length=1)
     destination: str = Field(..., min_length=1)
+
+    source_coords: list[float]
+    destination_coords: list[float]
+
     travel_date: date
     travel_time: time | None = None
     seat_required: int = Field(..., gt=0)
