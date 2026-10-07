@@ -78,10 +78,24 @@ class Ride(Base):
         nullable=False
     )
 
-    driver = relationship("User", back_populates="rides")
-    vehicle = relationship("Vehicle", back_populates="rides")
+    # relationships
+    driver = relationship(
+        "User", 
+        back_populates="rides"
+        )
+    
+    vehicle = relationship(
+        "Vehicle", 
+        back_populates="rides"
+    )
+
     ride_requests = relationship(
-    "RideRequest",
-    back_populates="ride",
-    cascade="all, delete-orphan"
-)
+        "RideRequest",
+        back_populates="ride",
+        cascade="all, delete-orphan"
+    )
+
+    chat_conversations = relationship(
+        "ChatConversation",
+        back_populates="ride"
+    )

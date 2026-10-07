@@ -51,6 +51,22 @@ class User(Base):
     cascade="all, delete-orphan"
 )
 
-    # Relationships
-    # kyc_documents = relationship("KYCDocument", back_populates="user")
-    # vehicles = relationship("Vehicle", back_populates="owner")
+    # to get driver conversations
+    driver_conversations = relationship(
+        "ChatConversation",
+        foreign_keys="ChatConversation.driver_id",
+        back_populates="driver"
+    )
+
+    # to get passenger conversations
+    passenger_conversations = relationship(
+        "ChatConversation",
+        foreign_keys="ChatConversation.passenger_id",
+        back_populates="passenger"
+    )
+
+    # to gets all messages sent by the user
+    sent_messages = relationship(
+    "ChatMessage",
+    back_populates="sender"
+)

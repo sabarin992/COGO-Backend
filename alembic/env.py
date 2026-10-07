@@ -10,6 +10,8 @@ from app.models.kyc_docs import KYC
 from app.models.vehicle import Vehicle
 from app.models.ride import Ride
 from app.models.ride_request import RideRequest
+from app.models.chat_message import ChatMessage
+from app.models.chat_conversation import ChatConversation
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
