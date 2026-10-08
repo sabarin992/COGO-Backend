@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, user, otp, kyc, vehicle, ride
+from app.api.v1.endpoints import auth, user, otp, kyc, vehicle, ride, chat
 
 api_router = APIRouter()
 
@@ -10,3 +10,4 @@ api_router.include_router(kyc.router, prefix="/kyc", tags=["KYC"])
 api_router.include_router(vehicle.router, prefix="/vehicles", tags=["Vehicles"])
 api_router.include_router(vehicle.router, prefix="/vehicle", tags=["Vehicle"])
 api_router.include_router(ride.router, prefix="/ride", tags=["Ride"])
+api_router.include_router(chat.router, prefix="/chat", tags=["Chat"])

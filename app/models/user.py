@@ -2,6 +2,8 @@ from sqlalchemy import Column,Integer,String,Boolean,DateTime
 from datetime import datetime,timezone
 from app.db.base import Base
 from sqlalchemy.orm import relationship
+from app.models.chat_message import ChatMessage
+from app.models.chat_conversation import ChatConversation
 
 class User(Base):
     __tablename__ = "users"

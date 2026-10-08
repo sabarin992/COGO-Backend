@@ -19,6 +19,17 @@ def get_conversation(
     return conversation
 
 
+def get_conversation_by_id(
+    db: Session,
+    conversation_id: int
+):
+    return (
+        db.query(ChatConversation)
+        .filter(ChatConversation.id == conversation_id)
+        .first()
+    )
+
+
 def create_conversation(
         db:Session,
         ride_id:int,

@@ -5,6 +5,7 @@ from app.models.ride import RideStatus
 from datetime import datetime, timedelta
 from app.schemas.ride import RideDetailsResponse
 from app.utils.route_utils import is_intermediate_route
+from app.services.chat_service import get_or_create_conversation
 
 
 from app.repositories import (
@@ -593,6 +594,8 @@ def cancel_ride_request_service(
         status="cancelled",
     )
 
+
+
     db.commit()
     db.refresh(updated_request)
 
@@ -630,6 +633,8 @@ def accept_ride_request_service(
     ride_request_id: int,
     email: EmailStr,
 ):
+
+  
     try:
         # Get logged-in driver
         driver = user_repo.get_user_by_email(
@@ -707,6 +712,13 @@ def accept_ride_request_service(
                 ride_request_id=ride_request_id,
                 status="accepted",
             )
+        )
+        # Create chat conversation between driver and passenger
+        get_or_create_conversation(
+            db=db,
+            ride_id=ride_request.ride_id,
+            driver_id=driver.id,
+            passenger_id=ride_request.passenger_id,
         )
 
         # Commit all changes together
