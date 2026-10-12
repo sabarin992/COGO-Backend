@@ -157,20 +157,32 @@ async def location_websocket(
             if not is_driver:
                 continue
 
-            # ── 4b. Re-validate ride is still active (per-update check) ─────
-            # Refresh ride status from DB so that a completed/cancelled ride
-            # cannot keep receiving driver updates after the transition.
-            current_ride = get_ride_by_id_only(db=db, ride_id=ride_id)
-            if current_ride is None or current_ride.status not in _ACTIVE_STATUSES:
+            # ── 4b. Validate that the decoded JSON value is an object ────────
+            # json.loads() can return a list, string, number, or bool for
+            # valid-but-non-object JSON. Guard before calling data.get().
+            if not isinstance(data, dict):
                 await websocket.send_json(
                     {
                         "type": "error",
-                        "detail": "Ride is no longer active. Please close the connection.",
+                        "detail": 'Expected a JSON object: {"lat": <float>, "lng": <float>}',
                     }
                 )
                 continue
 
-            # ── 4c. Validate coordinate values ──────────────────────────────
+            # ── 4c. Re-validate ride is still active (per-update check) ─────
+            # get_ride_by_id_only() issues a fresh SELECT on every call so
+            # the returned object always reflects the current DB state.
+            # db.refresh() is not needed here — it would only add a second
+            # round-trip to re-read the row we just fetched.
+            current_ride = get_ride_by_id_only(db=db, ride_id=ride_id)
+            if current_ride is None or current_ride.status not in _ACTIVE_STATUSES:
+                await websocket.close(
+                    code=1008,
+                    reason="Ride is no longer active",
+                )
+                break
+
+            # ── 4d. Validate coordinate values ──────────────────────────────
             lat = data.get("lat")
             lng = data.get("lng")
 
@@ -213,7 +225,7 @@ async def location_websocket(
                 )
                 continue
 
-            # ── 4d. Broadcast to all room members ────────────────────────────
+            # ── 4e. Broadcast to all room members ────────────────────────────
             # broadcast() iterates a copy of the connection list and silently
             # removes any socket that fails to send (stale connections).
             await location_manager.broadcast(
