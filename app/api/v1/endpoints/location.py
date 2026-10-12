@@ -195,6 +195,19 @@ async def location_websocket(
                 )
                 continue
 
+            # Reject booleans before conversion: bool is a subclass of int in
+            # Python, so float(True)==1.0 and float(False)==0.0 silently pass
+            # the float() call and the range checks. JSON true/false deserialise
+            # to Python bool, so we must reject them before float().
+            if isinstance(lat, bool) or isinstance(lng, bool):
+                await websocket.send_json(
+                    {
+                        "type": "error",
+                        "detail": "lat and lng must be numbers, not booleans",
+                    }
+                )
+                continue
+
             try:
                 lat = float(lat)
                 lng = float(lng)
