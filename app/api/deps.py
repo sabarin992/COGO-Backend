@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from app.db.deps import get_db
 from app.core.security import verify_token
 from app.repositories import user_repo
+from fastapi import WebSocket, WebSocketException, status
+
 
 def get_current_user(request: Request, db: Session = Depends(get_db)):
 
@@ -66,5 +68,62 @@ def get_current_admin(request: Request, db: Session = Depends(get_db)):
 
     if user.is_blocked:
         raise HTTPException(status_code=403, detail="User is blocked")
+
+    return user
+
+
+def get_current_user_ws(
+    websocket: WebSocket,
+    db: Session = Depends(get_db),
+):
+    print("========== WEBSOCKET AUTH ==========")
+    print("Cookies:", websocket.cookies)
+
+    token = websocket.cookies.get("access_token")
+
+    print("Access token:", token)
+    
+
+    if not token:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION,
+            reason="Not authenticated"
+        )
+
+    if token.startswith("Bearer "):
+        token = token.split(" ")[1]
+
+    payload = verify_token(token)
+
+    if payload is None:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION,
+            reason="Invalid token"
+        )
+
+    email = payload.get("sub")
+
+    if not email:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION,
+            reason="Invalid token payload"
+        )
+
+    user = user_repo.get_user_by_email(
+        db,
+        email
+    )
+
+    if not user:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION,
+            reason="User not found"
+        )
+
+    if user.is_blocked:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION,
+            reason="User is blocked"
+        )
 
     return user

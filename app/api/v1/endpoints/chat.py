@@ -12,7 +12,98 @@ from app.api.deps import get_current_user
 from app.services import chat_service
 
 
+
 router = APIRouter()
+
+
+from fastapi import (
+    APIRouter,
+    Depends,
+    WebSocket,
+    WebSocketDisconnect,
+)
+
+from sqlalchemy.orm import Session
+
+from app.db.deps import get_db
+from app.api.deps import get_current_user_ws
+from app.repositories.chat_repository import get_conversation_by_id
+from app.websocket.connection_manager import ConnectionManager
+
+
+router = APIRouter()
+
+manager = ConnectionManager()
+
+
+@router.websocket("/ws/chat/{conversation_id}")
+async def chat_websocket(
+    websocket: WebSocket,
+    conversation_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user_ws),
+):
+    conversation = get_conversation_by_id(
+        db=db,
+        conversation_id=conversation_id,
+    )
+
+    if not conversation:
+        await websocket.close(code=1008)
+        return
+
+    # Check whether user belongs to this conversation
+    if (
+        user.id != conversation.driver_id
+        and user.id != conversation.passenger_id
+    ):
+        await websocket.close(code=1008)
+        return
+
+    await manager.connect(
+        conversation_id,
+        websocket,
+    )
+
+    try:
+        while True:
+
+            data = await websocket.receive_json()
+            print('data = ',data)
+
+            message = data.get("message")
+
+            if not message:
+                continue
+
+            chat_message = chat_service.send_message_by_user_id(
+                db=db,
+                conversation_id=conversation_id,
+                user_id=user.id,
+                message=message,
+)
+
+            # Message to send to connected clients
+            response = {
+                "id": chat_message.id,
+                "conversation_id": chat_message.conversation_id,
+                "sender_id": chat_message.sender_id,
+                "message": chat_message.message,
+                "created_at": chat_message.created_at.isoformat(),
+            }
+
+            # Broadcast
+            await manager.send_message(
+                conversation_id,
+                response,
+            )
+
+    except WebSocketDisconnect:
+
+        manager.disconnect(
+            conversation_id,
+            websocket,
+        )
 
 
 # Get messages of a conversation

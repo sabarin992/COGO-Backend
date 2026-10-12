@@ -56,6 +56,40 @@ def send_message(
     return chat_message
 
 
+def send_message_by_user_id(
+    db: Session,
+    conversation_id: int,
+    user_id: int,
+    message: str,
+):
+    conversation = get_conversation_by_id(
+        db,
+        conversation_id
+    )
+
+    if not conversation:
+        raise NotFoundException(
+            "Conversation not found"
+        )
+
+    if (
+        user_id != conversation.driver_id
+        and user_id != conversation.passenger_id
+    ):
+        raise BadRequestException(
+            "You are not the driver or passenger of this conversation"
+        )
+
+    chat_message = create_message(
+        db=db,
+        conversation_id=conversation_id,
+        sender_id=user_id,
+        message=message,
+    )
+
+    return chat_message
+
+
 def get_conversation_messages(
     db: Session,
     conversation_id: int,
