@@ -149,12 +149,16 @@ def delete_ride(
     )
 
     if not ride:
-        return None
+        return False
 
-    db.delete(ride)
-    db.commit()
+    try:
+        db.delete(ride)
+        db.commit()
+        return True
 
-    return ride
+    except Exception:
+        db.rollback()
+        raise
 
 # Search rides
 def search_rides(

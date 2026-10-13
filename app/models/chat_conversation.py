@@ -38,7 +38,8 @@ class ChatConversation(Base):
     '''
     messages = relationship(
         "ChatMessage",
-        back_populates="conversation"
+        back_populates="conversation",
+        cascade="all, delete-orphan",
     )
 
     ride = relationship(

@@ -97,5 +97,6 @@ class Ride(Base):
 
     chat_conversations = relationship(
         "ChatConversation",
-        back_populates="ride"
+        back_populates="ride",
+        cascade="all, delete-orphan"
     )
