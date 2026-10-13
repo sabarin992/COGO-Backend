@@ -129,7 +129,17 @@ def get_conversation_messages(
             "You are not the driver or passenger of this conversation"
         )
 
-    return messages
+    return [
+        {
+            "id": msg.id,
+            "conversation_id": msg.conversation_id,
+            "sender_id": msg.sender_id,
+            "sender_name": msg.sender.full_name if msg.sender else None,
+            "message": msg.message,
+            "created_at": msg.created_at,
+        }
+        for msg in messages
+    ]
 
 
 def get_conversation_by_request(

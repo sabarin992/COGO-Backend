@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.models.chat_conversation import ChatConversation
 from app.models.chat_message import ChatMessage
 from app.models.ride_request import RideRequest
@@ -71,9 +71,13 @@ def get_messages(
         db:Session,
         conversation_id:int
 ):
-    messages = db.query(ChatMessage).filter(
-        ChatMessage.conversation_id == conversation_id
-    ).order_by(ChatMessage.created_at).all()
+    messages = (
+        db.query(ChatMessage)
+        .options(joinedload(ChatMessage.sender))
+        .filter(ChatMessage.conversation_id == conversation_id)
+        .order_by(ChatMessage.created_at)
+        .all()
+    )
 
     return messages
 
