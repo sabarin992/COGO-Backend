@@ -21,6 +21,7 @@ from fastapi import (
     Depends,
     WebSocket,
     WebSocketDisconnect,
+    HTTPException,
 )
 
 from sqlalchemy.orm import Session
@@ -139,3 +140,24 @@ def send_message(
         email=email,
         message=message_data.message,
     )
+
+
+# Look up conversation_id for a specific ride request.
+# Both the driver and the passenger of the request can call this.
+@router.get("/conversations/by-request/{ride_request_id}")
+def get_conversation_by_request(
+    ride_request_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    conversation = chat_service.get_conversation_by_request(
+        db=db,
+        ride_request_id=ride_request_id,
+        email=email,
+    )
+    if not conversation:
+        raise HTTPException(
+            status_code=404,
+            detail="No conversation found for this ride request.",
+        )
+    return {"conversation_id": conversation.id}

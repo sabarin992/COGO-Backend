@@ -8,7 +8,8 @@ from app.repositories.chat_repository import (
     create_conversation,
      create_message,
      get_conversation_by_id,
-     get_messages
+     get_messages,
+     get_conversation_by_ride_request_id,
 )
 
 
@@ -129,3 +130,34 @@ def get_conversation_messages(
         )
 
     return messages
+
+
+def get_conversation_by_request(
+    db: Session,
+    ride_request_id: int,
+    email: EmailStr,
+):
+    """
+    Return the ChatConversation for the given ride_request_id.
+    Only the driver or passenger of that request may call this.
+    Returns None if no conversation exists yet (request not accepted).
+    """
+    user = user_repo.get_user_by_email(db=db, email=email)
+    if not user:
+        raise NotFoundException("User not found.")
+
+    conversation = get_conversation_by_ride_request_id(
+        db=db,
+        ride_request_id=ride_request_id,
+    )
+
+    if not conversation:
+        return None
+
+    # Authorisation: only the driver or passenger may access
+    if user.id != conversation.driver_id and user.id != conversation.passenger_id:
+        raise BadRequestException(
+            "You are not authorised to access this conversation."
+        )
+
+    return conversation

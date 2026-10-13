@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.chat_conversation import ChatConversation
 from app.models.chat_message import ChatMessage
+from app.models.ride_request import RideRequest
 
 
 def get_conversation(
@@ -75,3 +76,24 @@ def get_messages(
     ).order_by(ChatMessage.created_at).all()
 
     return messages
+
+
+def get_conversation_by_ride_request_id(
+    db: Session,
+    ride_request_id: int,
+):
+    """
+    Returns the ChatConversation associated with the given ride_request_id.
+    A conversation is linked by (ride_id, passenger_id) which are both
+    available from the RideRequest row.
+    """
+    return (
+        db.query(ChatConversation)
+        .join(
+            RideRequest,
+            (RideRequest.ride_id == ChatConversation.ride_id)
+            & (RideRequest.passenger_id == ChatConversation.passenger_id),
+        )
+        .filter(RideRequest.ride_request_id == ride_request_id)
+        .first()
+    )
