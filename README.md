@@ -68,11 +68,48 @@ CoGo helps drivers and passengers share travel expenses, making journeys more af
 ## Technology Stack
 
 ### Backend
-- **FastAPI** - Building REST APIs and backend endpoints.
-- **Uvicorn** - Running the FastAPI application server.
-- **SQLAlchemy** - ORM for interacting with the database.
-- **Alembic** - Managing database schema migrations.
+- **FastAPI** – Building REST APIs and backend application logic.
+- **Uvicorn** – ASGI server for running the FastAPI application.
+- **Starlette** – Provides the underlying ASGI functionality used by FastAPI.
+- **Pydantic** – Data validation, request handling, and response schemas.
+- **Pydantic Settings** – Managing application configuration and environment settings.
 
 ### Database
-- **PostgreSQL** - Relational database for storing application data.
+- **PostgreSQL** – Relational database for storing application data.
+- **SQLAlchemy** – ORM for database operations and model management.
+- **Alembic** – Managing database schema migrations.
+- **Psycopg2** – PostgreSQL database adapter for Python.
+
+### Authentication & Security
+- **Python-JOSE** – JWT creation and verification.
+- **Argon2-CFFI** – Password hashing using Argon2.
+- **Passlib** – Password hashing utilities.
+- **Cryptography** – Cryptographic operations.
+- **Google Auth** – Google authentication integration.
+- **Email Validator** – Email address validation.
+- **Phonenumbers** – Phone number parsing and validation.
+
+### Email & Notifications
+- **FastAPI-Mail** – Email integration for the FastAPI application.
+- **aiosmtplib** – Asynchronous SMTP email delivery.
+
+### File & Image Management
+- **Cloudinary** – Cloud-based image and media storage and management.
+- **Python Multipart** – Handling multipart form data and file uploads.
+
+### Caching & Real-Time Communication
+- **Redis** – In-memory data storage for caching or other application features, depending on your implementation.
+- **WebSockets** – Real-time, bidirectional communication.
+- **Websockets** – Python library for WebSocket communication.
+
+### HTTP & External Integrations
+- **HTTPX** – HTTP client for communicating with external services.
+- **Requests** – HTTP requests to external APIs.
+- **Google Auth** – Integration with Google authentication services.
+
+### Configuration & Utilities
+- **Python-Dotenv** – Loading environment variables from `.env` files.
+- **Jinja2** – Template rendering.
+- **PyYAML** – Reading and writing YAML configuration files.
+
 
