@@ -63,3 +63,16 @@ CoGo helps drivers and passengers share travel expenses, making journeys more af
 - Real-Time Driver Location Sharing
 - Live Location Updates Using WebSockets
 - Ride-Based Location Access Control
+  
+
+## Technology Stack
+
+### Backend
+- **FastAPI** - Building REST APIs and backend endpoints.
+- **Uvicorn** - Running the FastAPI application server.
+- **SQLAlchemy** - ORM for interacting with the database.
+- **Alembic** - Managing database schema migrations.
+
+### Database
+- **PostgreSQL** - Relational database for storing application data.
+
