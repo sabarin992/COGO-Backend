@@ -113,3 +113,56 @@ CoGo helps drivers and passengers share travel expenses, making journeys more af
 - **PyYAML** – Reading and writing YAML configuration files.
 
 
+## Project Structure
+
+```text
+.
+├── alembic/
+│   ├── versions/                  # Database migration history
+│   ├── env.py                     # Migration environment configuration
+│   └── script.py.mako             # Migration file template
+├── app/
+│   ├── api/
+│   │   ├── deps.py                # API dependencies
+│   │   └── v1/
+│   │       ├── endpoints/         # API endpoint handlers
+│   │       │   ├── auth.py
+│   │       │   ├── chat.py
+│   │       │   ├── kyc.py
+│   │       │   ├── location.py
+│   │       │   ├── otp.py
+│   │       │   ├── ride.py
+│   │       │   ├── user.py
+│   │       │   └── vehicle.py
+│   │       └── router.py          # API route registration
+│   ├── core/
+│   │   ├── config.py              # Application configuration
+│   │   ├── exceptions.py          # Custom exceptions
+│   │   ├── redis.py               # Redis configuration
+│   │   ├── security.py            # Authentication and security
+│   │   └── token_blacklist.py     # Token blacklist management
+│   ├── db/
+│   │   ├── base.py                # SQLAlchemy model registration
+│   │   ├── deps.py                # Database dependencies
+│   │   └── session.py             # Database session configuration
+│   ├── models/                    # SQLAlchemy database models
+│   │   ├── chat_conversation.py
+│   │   ├── chat_message.py
+│   │   ├── kyc_docs.py
+│   │   ├── ride_request.py
+│   │   ├── ride.py
+│   │   ├── user.py
+│   │   └── vehicle.py
+│   ├── schemas/                   # Pydantic request and response schemas
+│   ├── repositories/              # Database query operations
+│   ├── services/                  # Business logic
+│   ├── utils/                     # Shared utility functions
+│   ├── websocket/                 # WebSocket connection and location management
+│   ├── __init__.py
+│   └── main.py                    # FastAPI application entry point
+├── tests/                         # Automated tests
+├── alembic.ini                    # Alembic configuration
+├── requirements.txt               # Python dependencies
+└── README.md                      # Project documentation
+```
+
