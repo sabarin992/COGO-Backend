@@ -320,3 +320,10 @@ Use these pages to explore and test your API endpoints.
 - **Import errors:** Activate your virtual environment and reinstall dependencies.
 
 
+## Future Improvements
+
+- **Payment Integration:** Integrate Stripe to enable secure online payments for ride-sharing transactions.
+- **SOS Management:** Implement an emergency SOS feature to help users request assistance during a ride.
+- **Admin Dashboard:** Develop an administrative dashboard to manage users, rides, ride requests, and KYC verification.
+- **Sales Reports:** Implement an admin-side sales reporting feature to track revenue, payment transactions, completed rides, and sales performance.
+
