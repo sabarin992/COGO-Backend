@@ -209,36 +209,9 @@ Install the required Python packages:
 pip install -r requirements.txt
 ```
 
-### 4. Configure Environment Variables
 
-Create a `.env` file in the project root directory, alongside `alembic.ini` and `requirements.txt`.
 
-Add the environment variables required by your application.
-
-Example:
-
-```env
-DATABASE_URL=postgresql://<username>:<password>@localhost:5432/<database_name>
-
-SECRET_KEY=<your-secret-key>
-ALGORITHM=HS256
-
-REDIS_URL=redis://localhost:6379/0
-
-GOOGLE_CLIENT_ID=<your-google-client-id>
-
-CLOUDINARY_CLOUD_NAME=<your-cloud-name>
-CLOUDINARY_API_KEY=<your-cloudinary-api-key>
-CLOUDINARY_API_SECRET=<your-cloudinary-api-secret>
-```
-
-Configure any additional variables required for email delivery, OTP verification, and other integrations.
-
-**Important:** The variable names above are examples. Check `app/core/config.py`, `app/core/security.py`, and the relevant service files to confirm the exact names and settings used by your application.
-
-Never commit your actual `.env` file or secret credentials to GitHub.
-
-### 5. Set Up PostgreSQL
+### 4. Set Up PostgreSQL
 
 Create a PostgreSQL database for the application.
 
@@ -252,7 +225,7 @@ Update `DATABASE_URL` in your `.env` file with your PostgreSQL username, passwor
 
 Make sure PostgreSQL is running before starting the application.
 
-### 6. Start Redis
+### 5. Start Redis
 
 If your application uses Redis for token blacklisting or other features, ensure the Redis server is running.
 
@@ -276,7 +249,7 @@ PONG
 
 If Redis is already running or hosted remotely, configure the appropriate `REDIS_URL` instead.
 
-### 7. Run Database Migrations
+### 6. Run Database Migrations
 
 Apply the existing Alembic migrations to create or update the database schema:
 
@@ -288,7 +261,7 @@ This applies the migrations in `alembic/versions/` up to the latest revision.
 
 Run this command from the project root directory, where `alembic.ini` is located.
 
-### 8. Start the FastAPI Server
+### 7. Start the FastAPI Server
 
 Run the application using Uvicorn:
 
@@ -302,7 +275,7 @@ The backend should be available at:
 http://127.0.0.1:8000
 ```
 
-### 9. Access API Documentation
+### 8. Access API Documentation
 
 FastAPI provides interactive API documentation.
 
@@ -318,6 +291,27 @@ Use these pages to explore and test your API endpoints.
 - **Missing environment variables:** Check your `.env` file and application configuration.
 - **Migration errors:** Check the Alembic revision history and database connection settings.
 - **Import errors:** Activate your virtual environment and reinstall dependencies.
+
+### Environment Variables
+
+Create a `.env` file in the project root directory and configure the following environment variables:
+
+| Variable | Description |
+|---|---|
+| `SECRET_KEY` | Secret key used for application security and token-related operations, depending on your configuration. |
+| `DATABASE_URL` | Connection URL for the PostgreSQL database. |
+| `FRONTEND_ORIGIN` | Frontend origin allowed to communicate with the backend, typically used for CORS configuration. |
+| `APP_PASSWORD` | Application password used for a configured service, such as SMTP email delivery, if applicable. |
+| `GOOGLE_CLIENT_ID` | Client ID used for Google authentication. |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name for image and media management. |
+| `CLOUDINARY_API_KEY` | API key used to authenticate with Cloudinary. |
+| `CLOUDINARY_API_SECRET` | Secret credential used for authenticated Cloudinary operations. |
+
+**Security Notes:**
+- Never commit your `.env` file to GitHub.
+- Add `.env` to your `.gitignore` file.
+- Share a `.env.example` file containing variable names and placeholder values instead of real credentials.
+- Keep secret keys, database passwords, email passwords, and API secrets private.
 
 
 ## Future Improvements
