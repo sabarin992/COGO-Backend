@@ -28,6 +28,7 @@ app.add_middleware(
         "http://127.0.0.1:5174",
         "http://localhost:3000",
         settings.FRONTEND_ORIGIN,
+        "https://ml7ncx2x-5173.inc1.devtunnels.ms",
     ],
     allow_credentials=True,
     allow_methods=["*"],
