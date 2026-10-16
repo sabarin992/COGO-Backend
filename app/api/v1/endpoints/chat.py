@@ -1,39 +1,26 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from pydantic import EmailStr
-
-from app.schemas.chat import (
-    ChatMessageCreate,
-    ChatMessageResponse
-    )
-
-from app.db.deps import get_db
-from app.api.deps import get_current_user
-from app.services import chat_service
-
-
-
-router = APIRouter()
-
-
 from fastapi import (
     APIRouter,
     Depends,
     WebSocket,
     WebSocketDisconnect,
 )
-
 from sqlalchemy.orm import Session
+from pydantic import EmailStr
 
+from app.schemas.chat import (
+    ChatMessageCreate,
+    ChatMessageResponse,
+    ConversationResponse,
+)
 from app.db.deps import get_db
-from app.api.deps import get_current_user_ws
+from app.api.deps import get_current_user, get_current_user_ws
 from app.repositories.chat_repository import get_conversation_by_id
+from app.services import chat_service
 from app.websocket.connection_manager import ConnectionManager
 
-
 router = APIRouter()
-
 manager = ConnectionManager()
+
 
 
 @router.websocket("/ws/chat/{conversation_id}")
@@ -104,6 +91,23 @@ async def chat_websocket(
             conversation_id,
             websocket,
         )
+
+
+# Get conversation by ride request ID
+@router.get(
+    "/conversations/by-request/{ride_request_id}",
+    response_model=ConversationResponse,
+)
+def get_conversation_by_request(
+    ride_request_id: int,
+    email: EmailStr = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return chat_service.get_conversation_by_ride_request(
+        db=db,
+        ride_request_id=ride_request_id,
+        email=email,
+    )
 
 
 # Get messages of a conversation

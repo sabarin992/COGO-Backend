@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
-from app.core.exceptions import BadRequestException,NotFoundException
+from app.core.exceptions import BadRequestException, NotFoundException, ForbiddenException
 from pydantic import EmailStr
 from app.repositories import user_repo
+from app.models.ride_request import RideRequest
 
 from app.repositories.chat_repository import (
     get_conversation,
@@ -129,3 +130,49 @@ def get_conversation_messages(
         )
 
     return messages
+
+
+def get_conversation_by_ride_request(
+    db: Session,
+    ride_request_id: int,
+    email: EmailStr,
+):
+    user = user_repo.get_user_by_email(db=db, email=email)
+    if not user:
+        raise NotFoundException("User not found.")
+
+    ride_request = (
+        db.query(RideRequest)
+        .filter(RideRequest.ride_request_id == ride_request_id)
+        .first()
+    )
+    if not ride_request:
+        raise NotFoundException("Ride request not found.")
+
+    ride = ride_request.ride
+    if not ride:
+        raise NotFoundException("Ride not found.")
+
+    # Only driver of the ride or the passenger of the request can access conversation
+    if user.id != ride.driver_id and user.id != ride_request.passenger_id:
+        raise ForbiddenException("You are not authorized to access this conversation.")
+
+    conversation = get_conversation(
+        db=db,
+        ride_id=ride.ride_id,
+        driver_id=ride.driver_id,
+        passenger_id=ride_request.passenger_id,
+    )
+
+    if not conversation:
+        if ride_request.status in ["accepted", "picked_up"]:
+            conversation = create_conversation(
+                db=db,
+                ride_id=ride.ride_id,
+                driver_id=ride.driver_id,
+                passenger_id=ride_request.passenger_id,
+            )
+        else:
+            raise NotFoundException("Conversation not found for this request.")
+
+    return {"conversation_id": conversation.id}

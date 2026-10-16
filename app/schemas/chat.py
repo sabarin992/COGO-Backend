@@ -15,3 +15,10 @@ class ChatMessageResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ConversationResponse(BaseModel):
+    conversation_id: int
+
+    class Config:
+        from_attributes = True
