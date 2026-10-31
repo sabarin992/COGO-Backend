@@ -79,7 +79,7 @@ def get_current_user_ws(
     print("========== WEBSOCKET AUTH ==========")
     print("Cookies:", websocket.cookies)
 
-    token = websocket.cookies.get("access_token")
+    token = websocket.cookies.get("access_token") or websocket.query_params.get("token")
 
     print("Access token:", token)
     
