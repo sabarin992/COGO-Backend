@@ -55,10 +55,11 @@ class User(Base):
     )
 
     ride_requests = relationship(
-    "RideRequest",
-    back_populates="passenger",
-    cascade="all, delete-orphan"
-)
+        "RideRequest",
+        foreign_keys="RideRequest.passenger_id",
+        back_populates="passenger",
+        cascade="all, delete-orphan"
+    )
 
     # to get driver conversations
     driver_conversations = relationship(

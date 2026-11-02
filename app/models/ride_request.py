@@ -45,6 +45,22 @@ class RideRequest(Base):
         nullable=False
     )
 
+    cancellation_reason = Column(
+        String,
+        nullable=True
+    )
+
+    cancelled_by_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
+    cancelled_at = Column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+
     created_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -59,11 +75,17 @@ class RideRequest(Base):
     )
 
     ride = relationship(
-    "Ride",
-    back_populates="ride_requests"
+        "Ride",
+        back_populates="ride_requests"
     )
 
     passenger = relationship(
         "User",
+        foreign_keys=[passenger_id],
         back_populates="ride_requests"
+    )
+
+    cancelled_by = relationship(
+        "User",
+        foreign_keys=[cancelled_by_id]
     )
