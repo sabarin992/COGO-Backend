@@ -43,6 +43,7 @@ class User(Base):
 
     rides = relationship(
         "Ride",
+        foreign_keys="Ride.driver_id",
         back_populates="driver",
         cascade="all, delete-orphan"
     )

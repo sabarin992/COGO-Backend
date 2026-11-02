@@ -76,6 +76,22 @@ class Ride(Base):
         nullable=False
     )
 
+    cancellation_reason = Column(
+        Text,
+        nullable=True
+    )
+
+    cancelled_by_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
+    cancelled_at = Column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+
     created_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -92,8 +108,14 @@ class Ride(Base):
     # relationships
     driver = relationship(
         "User", 
+        foreign_keys=[driver_id],
         back_populates="rides"
-        )
+    )
+
+    cancelled_by = relationship(
+        "User",
+        foreign_keys=[cancelled_by_id]
+    )
     
     vehicle = relationship(
         "Vehicle", 
