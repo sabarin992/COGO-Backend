@@ -72,19 +72,19 @@ def get_current_admin(request: Request, db: Session = Depends(get_db)):
     return user
 
 
+import logging
+
+logger = logging.getLogger("cogo.auth.ws")
+
+
 def get_current_user_ws(
     websocket: WebSocket,
     db: Session = Depends(get_db),
 ):
-    print("========== WEBSOCKET AUTH ==========")
-    print("Cookies:", websocket.cookies)
-
     token = websocket.cookies.get("access_token") or websocket.query_params.get("token")
 
-    print("Access token:", token)
-    
-
     if not token:
+        logger.warning("WebSocket auth failed: No access_token cookie or token parameter found.")
         raise WebSocketException(
             code=status.WS_1008_POLICY_VIOLATION,
             reason="Not authenticated"
@@ -96,6 +96,7 @@ def get_current_user_ws(
     payload = verify_token(token)
 
     if payload is None:
+        logger.warning("WebSocket auth failed: Token verification returned None (expired or invalid).")
         raise WebSocketException(
             code=status.WS_1008_POLICY_VIOLATION,
             reason="Invalid token"
@@ -104,6 +105,7 @@ def get_current_user_ws(
     email = payload.get("sub")
 
     if not email:
+        logger.warning("WebSocket auth failed: 'sub' claim missing from token payload.")
         raise WebSocketException(
             code=status.WS_1008_POLICY_VIOLATION,
             reason="Invalid token payload"
@@ -115,15 +117,18 @@ def get_current_user_ws(
     )
 
     if not user:
+        logger.warning("WebSocket auth failed: User not found in database for email=%s", email)
         raise WebSocketException(
             code=status.WS_1008_POLICY_VIOLATION,
             reason="User not found"
         )
 
     if user.is_blocked:
+        logger.warning("WebSocket auth failed: User is blocked (user_id=%d, email=%s)", user.id, email)
         raise WebSocketException(
             code=status.WS_1008_POLICY_VIOLATION,
             reason="User is blocked"
         )
 
+    logger.debug("WebSocket auth successful: user_id=%d, email=%s", user.id, email)
     return user

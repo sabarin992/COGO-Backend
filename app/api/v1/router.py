@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, user, otp, kyc, vehicle, ride, chat, recurring_ride, admin_ride, admin_booking
+from app.api.v1.endpoints import auth, user, otp, kyc, vehicle, ride, chat, recurring_ride, admin_ride, admin_booking, location
 
 api_router = APIRouter()
 
@@ -14,3 +14,4 @@ api_router.include_router(admin_ride.router, prefix="/admin/rides", tags=["Admin
 api_router.include_router(admin_booking.router, prefix="/admin/bookings", tags=["Admin Bookings"])
 api_router.include_router(recurring_ride.router, prefix="/recurring-rides", tags=["Recurring Rides"])
 api_router.include_router(chat.router, prefix="/chat", tags=["Chat"])
+api_router.include_router(location.router, prefix="/location", tags=["Location"])
