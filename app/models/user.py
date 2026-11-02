@@ -47,6 +47,12 @@ class User(Base):
         cascade="all, delete-orphan"
     )
 
+    recurring_rides = relationship(
+        "RecurringRide",
+        back_populates="driver",
+        cascade="all, delete-orphan"
+    )
+
     ride_requests = relationship(
     "RideRequest",
     back_populates="passenger",

@@ -5,6 +5,8 @@ from app.db.base import Base
 from app.db.session import engine
 from app.models.user import User
 from app.models.kyc_docs import KYC
+from app.models.ride import Ride
+from app.models.recurring_ride import RecurringRide
 from app.core.config import settings
 from app.core.exceptions import (
     BadRequestException,
@@ -39,6 +41,19 @@ app.add_middleware(
 Base.metadata.create_all(engine)
 
 app.include_router(api_router,prefix="/api/v1")
+
+
+@app.on_event("startup")
+def on_startup():
+    from app.db.session import SessionLocal
+    from app.services.recurring_ride_service import sync_all_active_schedules_service
+    db = SessionLocal()
+    try:
+        sync_all_active_schedules_service(db)
+    except Exception as e:
+        print(f"[RECURRING_RIDE] Startup schedule sync error: {e}")
+    finally:
+        db.close()
 
 
 # general exceptions

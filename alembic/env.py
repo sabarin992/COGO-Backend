@@ -9,6 +9,7 @@ from app.models.user import User
 from app.models.kyc_docs import KYC
 from app.models.vehicle import Vehicle
 from app.models.ride import Ride
+from app.models.recurring_ride import RecurringRide
 from app.models.ride_request import RideRequest
 from app.models.chat_message import ChatMessage
 from app.models.chat_conversation import ChatConversation

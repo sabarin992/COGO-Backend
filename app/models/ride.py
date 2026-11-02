@@ -11,6 +11,7 @@ from sqlalchemy import (
     Time,
     DateTime,
     ForeignKey,
+    UniqueConstraint,
 )
 
 from sqlalchemy.orm import relationship
@@ -30,6 +31,9 @@ class RideStatus(str, enum.Enum):
 
 class Ride(Base):
     __tablename__ = "rides"
+    __table_args__ = (
+        UniqueConstraint("recurring_ride_id", "travel_date", name="uq_recurring_ride_date"),
+    )
 
     ride_id = Column(Integer, primary_key=True, index=True)
 
@@ -44,6 +48,13 @@ class Ride(Base):
             ForeignKey("vehicles.id"),
             nullable=False
         )
+
+    recurring_ride_id = Column(
+        Integer,
+        ForeignKey("recurring_rides.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True
+    )
 
     source = Column(String(150), nullable=False)
 
@@ -86,6 +97,11 @@ class Ride(Base):
     
     vehicle = relationship(
         "Vehicle", 
+        back_populates="rides"
+    )
+
+    recurring_ride = relationship(
+        "RecurringRide",
         back_populates="rides"
     )
 

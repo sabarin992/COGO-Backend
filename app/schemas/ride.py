@@ -96,6 +96,8 @@ class RideVehicleResponse(BaseModel):
     registration_number: str
     seating_capacity: int
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class RidePassengerResponse(BaseModel):
     id: int

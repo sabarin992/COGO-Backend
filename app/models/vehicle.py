@@ -34,3 +34,7 @@ class Vehicle(Base):
         "Ride",
         back_populates="vehicle"
     )
+    recurring_rides = relationship(
+        "RecurringRide",
+        back_populates="vehicle"
+    )
